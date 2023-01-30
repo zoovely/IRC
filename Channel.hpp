@@ -3,39 +3,33 @@
 
 #include "Client.hpp"
 #include <vector>
+#include <map>
+#include <iterator>
 
 #define OPER 1
 #define NORMAL 2
 
-#define PUBLIC 3
-#define PRIVATE 4
-
 class Channel {
     private:
-        std::vector<std::pair<Client, int> > _users; // uesr와, 해당 채널에서의 권한
-        std::vector<Client> _ban;
-         //ban 당한 nickname들의 list string일 경우: 다시 들어올수 있지 않나?
-         //private인지 public인지를 확인할 수 잇는 flag
+        std::map<const Client&, int> _users; // uesr와, 해당 채널에서의 권한
+        std::map<const Client&, int>::iterator _it;
+        std::map<const Client&, int>::const_iterator _coit;
         std::string _name;
-        int _mode;
 
     public:
-        Channel(Client c1, Client c2);
-        Channel(std::string name);
-        ~Channel(void){};
+        Channel(Client client, std::string name);
+        ~Channel(void){}; // 이거 없애던지 나중에 소멸자 구현하던지
         //operator 아닐경우 싪패-> 1 리턴?
-        //누가 addban 을 요청했는가
-        std::string getName(void);
-        bool checkAuth(Client client);
-        int checkClient(std::string nickName);
-        bool checkBan(std::string nickName);
-        int join(Client client);
-        int ban(Client client, std::string nickName);
-        int unban(Client client, std::string nickName);
-        int invite(Client client, std::string nickName);
-        int kick(Client client, std::string nickName);
-        int op(Client client, std::string nickName);
-        int deop(Client client, std::string nickName);
+        std::vector<int> getFds(int senderFd) ;
+        const std::string getName(void) const;
+        bool checkAuth(const Client& client) const;
+        bool checkClient(std::string nick);
+        void addUser(const Client &client);
+        void delUser(const Client &client);
+        void delByNick(std::string nick);
+        void opUser(std::string nick);
+        void deopUser(std::string nick);
+        int getUserSize(void) const ;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include <string>
 #include "Server.hpp"
 
-Server::Server(int portNum, std::string pwd) 
+Server::Server(int portNum, std::string pwd)
 {
     _pwd = pwd;
     _serverFd = socket(PF_INET, SOCK_STREAM, 0);
@@ -48,6 +48,7 @@ int Server::acceptClient( void )
 	_poll[_serverFd].revents = 0;
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	readClient(clientFd);
+	// 여기서connect함수 호출 
 	// 패스워드 확인하고 맞으면 유저 네임, 닉네임 넣어서 만든 클라이언트 푸시
 	// 닉네임이 중복인지 확인 후 중복이면 임의의 char붙여서 생성
 	//checkNick();
@@ -72,8 +73,6 @@ bool Server::checkNick(std::string nick)
 {
 	return (true);
 }
-
-
 
 int Server::invite(Client client, std::string nickName, std::string channel) {
 	// checkUser(nickName)
@@ -113,9 +112,69 @@ int	Server::readClient(int fd)
 		return (-1);
 	}
 	std::cout << "buf : " << _readBuf << "\n"; // 나중에 지우기
+	//command class 만들고 checktype -> function 부르기
+	
 	_poll[fd].revents = 0;
 	std::memset(_readBuf, 0, BUF);
 	return (1);
+}
+
+void	Server::executeCommand(int fd) {
+	Command	com(_readBuf);
+	int	type = com.checkMsgType();
+	switch (type)
+	{
+		case CONNECT:
+			com.connect(fd, _pwd, _clients);
+			break;
+		case JOIN:
+			com.join(_clients[fd], _channels);
+			break;
+		case PART:
+			com.part(_clients[fd], _channels);
+			break;
+		case INVITE:
+			com.invite(_clients[fd], _channels, _clients);
+			break;
+		case KICK:
+			com.kick(_clients[fd], _channels);
+			break;
+		case NICK:
+			com.nick(_clients[fd], _clients);
+			break;
+		case LIST:
+			com.list(_clients[fd], _channels);
+			break;
+		case WHOIS:
+			com.whois(_clients[fd], _clients);
+			break;
+		case QUIT:
+			com.quit(_clients[fd], _channels, _clients);
+			break;
+		case PING:
+			com.ping(_clients[fd]);
+			break;
+		case OP:
+			com.op(_clients[fd], _channels);
+			break;
+		case DEOP:
+			com.deop(_clients[fd], _channels);
+			break;
+		case PRIVMSG:
+			com.privmsg(_clients[fd], _clients);
+			break;
+		case PRIVCH:
+			com.privmsg(_clients[fd], _channels);
+			break;
+		case NOTICE:
+			com.notice(_clients[fd], _clients);
+			break;
+		case NOTICH:
+			com.notice(_clients[fd], _channels);
+			break;
+		default:
+			break;
+	}
 }
 
 struct pollfd* Server::getPoll( void ) {
@@ -125,10 +184,6 @@ struct pollfd* Server::getPoll( void ) {
 int Server::getServerFd( void ) {
 	return _serverFd;
 }
-// buf : CAP LS
-// PASS 1234
-// NICK lampolar
-// USER lampolar lampolar 127.0.0.1 :김희선
 
 std::vector<Channel> Server::getChannel( void )
 {

@@ -12,6 +12,7 @@
 #include <cstring>
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Command.hpp"
 
 #define BUF 4096
 
@@ -35,6 +36,7 @@ class Server {
         void errorHandler(std::string msg);
         int invite(Client client, std::string nickName, std::string channel);int join(Client client, Channel channel);
         int join(Client client, std::string chName);
+        void executeCommand(int fd);
 
         std::vector<Channel> getChannel();
         struct pollfd* getPoll( void );
