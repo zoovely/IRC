@@ -1,10 +1,13 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
-#include "Client.hpp"
-#include <vector>
 #include <map>
+#include <vector>
 #include <iterator>
+#include <string>
+
+#include "Client.hpp"
+#include "Define.hpp"
 
 #define OPER 1
 #define NORMAL 2
@@ -18,9 +21,8 @@ class Channel {
 
     public:
         Channel(Client client, std::string name);
-        ~Channel(void){}; // 이거 없애던지 나중에 소멸자 구현하던지
-        //operator 아닐경우 싪패-> 1 리턴?
-        std::vector<int> getFds(int senderFd) ;
+        ~Channel(void) {}; // 이거 없애던지 나중에 소멸자 구현하던지
+        std::vector<int> getFds(int senderFd);
         const std::string getName(void) const;
         bool checkAuth(const Client& client) const;
         bool checkClient(std::string nick);
@@ -29,7 +31,8 @@ class Channel {
         void delByNick(std::string nick);
         void opUser(std::string nick);
         void deopUser(std::string nick);
-        int getUserSize(void) const ;
+        int getUserSize(void) const;
+        std::string getUsersNames(void);
 };
 
 #endif

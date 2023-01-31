@@ -47,21 +47,13 @@ int Server::acceptClient( void )
 	setPollFd(clientFd, clientFd, POLLIN, 0);
 	_poll[_serverFd].revents = 0;
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
-	readClient(clientFd);
-	// 여기서connect함수 호출 
-	// 패스워드 확인하고 맞으면 유저 네임, 닉네임 넣어서 만든 클라이언트 푸시
-	// 닉네임이 중복인지 확인 후 중복이면 임의의 char붙여서 생성
-	//checkNick();
-	std::string nick;
-	std::string user;
-	Client client(nick, user, clientFd); // 닉, 유저 넣어서 만들기
-	_clients.push_back(client); 
+	// readClient(clientFd);
 	return (1);
 }
 
 int Server::checkChannel(std::string channel)
 {
-    for (int i = 0; i != _channels.size(); i++)
+    for (size_t i = 0; i != _channels.size(); i++)
     {
         if (_channels[i].getName() == channel)
             return (i);
@@ -71,30 +63,8 @@ int Server::checkChannel(std::string channel)
 
 bool Server::checkNick(std::string nick)
 {
+	(void)nick;
 	return (true);
-}
-
-int Server::invite(Client client, std::string nickName, std::string channel) {
-	// checkUser(nickName)
-	//    return 1; // throw ERR_NOSUCHNICK;
-    int i = checkChannel(channel);
-    if (i == -1)
-        return 1; // throw ERR_NOSUCHCHANNEL;
-    if (_channels[i].invite(client, nickName))
-        return 1; // 안에서 throw 하나요???
-    return 0; // send invite msg to nickname to i
-}
-
-int	Server::join(Client client, std::string chName) 
-{
-	for (int i = 0; i < _channels.size(); i++)
-	{
-		if (_channels[i].getName() == chName)
-			return (_channels[i].join(client));
-	}
-	Channel	ch(chName);
-	_channels.push_back(ch);
-	return (1);
 }
 
 int	Server::readClient(int fd) 
@@ -112,65 +82,73 @@ int	Server::readClient(int fd)
 		return (-1);
 	}
 	std::cout << "buf : " << _readBuf << "\n"; // 나중에 지우기
-	//command class 만들고 checktype -> function 부르기
-	
+	executeCommand(fd);
 	_poll[fd].revents = 0;
 	std::memset(_readBuf, 0, BUF);
 	return (1);
 }
 
+int Server::getClientByFd(int fd) {
+	for(size_t i = 0; i < _clients.size(); i++) {
+		if (_clients[i].getFd() == fd)
+			return (i);
+	}
+	return (-1);
+}
+
 void	Server::executeCommand(int fd) {
 	Command	com(_readBuf);
 	int	type = com.checkMsgType();
+	int	cIdx = getClientByFd(fd);
 	switch (type)
 	{
 		case CONNECT:
 			com.connect(fd, _pwd, _clients);
 			break;
 		case JOIN:
-			com.join(_clients[fd], _channels);
+			com.join(_clients[cIdx], _channels);
 			break;
 		case PART:
-			com.part(_clients[fd], _channels);
+			com.part(_clients[cIdx], _channels);
 			break;
 		case INVITE:
-			com.invite(_clients[fd], _channels, _clients);
+			com.invite(_clients[cIdx], _channels, _clients);
 			break;
 		case KICK:
-			com.kick(_clients[fd], _channels);
+			com.kick(_clients[cIdx], _channels);
 			break;
 		case NICK:
-			com.nick(_clients[fd], _clients);
+			com.nick(_clients[cIdx], _clients);
 			break;
 		case LIST:
-			com.list(_clients[fd], _channels);
+			com.list(_clients[cIdx], _channels);
 			break;
 		case WHOIS:
-			com.whois(_clients[fd], _clients);
+			com.whois(_clients[cIdx], _clients);
 			break;
 		case QUIT:
-			com.quit(_clients[fd], _channels, _clients);
+			com.quit(_clients[cIdx], _channels, _clients);
 			break;
 		case PING:
-			com.ping(_clients[fd]);
+			com.ping(_clients[cIdx]);
 			break;
 		case OP:
-			com.op(_clients[fd], _channels);
+			com.op(_clients[cIdx], _channels);
 			break;
 		case DEOP:
-			com.deop(_clients[fd], _channels);
+			com.deop(_clients[cIdx], _channels);
 			break;
 		case PRIVMSG:
-			com.privmsg(_clients[fd], _clients);
+			com.privmsg(_clients[cIdx], _clients);
 			break;
 		case PRIVCH:
-			com.privmsg(_clients[fd], _channels);
+			com.privmsg(_clients[cIdx], _channels);
 			break;
 		case NOTICE:
-			com.notice(_clients[fd], _clients);
+			com.notice(_clients[cIdx], _clients);
 			break;
 		case NOTICH:
-			com.notice(_clients[fd], _channels);
+			com.notice(_clients[cIdx], _channels);
 			break;
 		default:
 			break;
@@ -183,11 +161,6 @@ struct pollfd* Server::getPoll( void ) {
 
 int Server::getServerFd( void ) {
 	return _serverFd;
-}
-
-std::vector<Channel> Server::getChannel( void )
-{
-	return _channels;
 }
 
 void Server::errorHandler(std::string msg) 

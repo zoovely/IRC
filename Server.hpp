@@ -10,9 +10,11 @@
 #include <vector>
 #include <poll.h>
 #include <cstring>
+
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Command.hpp"
+#include "Define.hpp"
 
 #define BUF 4096
 
@@ -30,18 +32,16 @@ class Server {
         Server(int portNum, std::string pwd);
         ~Server( void ){};
         int checkChannel(std::string channel);
-        int acceptClient( void ); // 뭐 넘겨줘야 하지..?, 닉네임 체크 + 패스워드 체크
+        int acceptClient( void );
         int readClient(int fd);
         bool checkNick(std::string nick); // 클라이언트 추가할 때 닉네임 중복 확인용 <- 중복이면 닉네임에 뭐 달아주고 경고문 뱉어줘야 함
         void errorHandler(std::string msg);
-        int invite(Client client, std::string nickName, std::string channel);int join(Client client, Channel channel);
-        int join(Client client, std::string chName);
         void executeCommand(int fd);
 
-        std::vector<Channel> getChannel();
         struct pollfd* getPoll( void );
         int getServerFd( void );
         void setPollFd(int index, int fd, int events, int revents);
+        int getClientByFd(int fd);
 };
 #endif
 

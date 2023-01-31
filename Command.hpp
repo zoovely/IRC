@@ -1,8 +1,13 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <unistd.h>
+#include <sys/socket.h>
+#include <ctype.h>
+
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Define.hpp"
 
 #define CONNECT 1
 #define JOIN    2
@@ -34,11 +39,13 @@ class Command {
         // define에대해서 확인 & 디파인값 확인 (없는거는 0 반환)
         int checkMsgType(void);
         // client fd로 메세지를 출력  // 파라미터 바뀌어야될듯
-        void send(int fd, std::string str);
+        void sendFd(int fd, std::string str);
+        void sendAll(std::vector<int> fds, std::string str);
         int checkValidChannel(const std::string chName, const std::vector<Channel> &chList);
         int checkValidClient(const std::string nick, const std::vector<Client> &cList);
         int	checkValidNick(const std::string nick);
-        void delChannel(std::vector <Channel> &chList, Channel& channel);
+        void delChannel(std::vector <Channel> &chList, Channel &channel);
+        std::string getUsers(const Channel &channel);
 
         //command list 
         int connect(int fd, std::string pwd, std::vector<Client> &cList); // 비번인증, 닉네임 중복검사 내부에서 필요& & welcome msg전송

@@ -8,10 +8,22 @@ const std::string Client::getNick() const{
 	return (_nick);
 }
 
-const std::string Client::getUser() {
+void Client::setNick(std::string nick) {
+	_nick = nick;
+}
+
+const std::string Client::getUser() const {
 	return (_user);
 }
 
-const int Client::getFd() const {
+int Client::getFd() const {
 	return (_clientFd);
+}
+
+const std::string Client::getIp() const{
+	return (_ip);
+}
+
+bool Client::operator<(const Client& c) const {
+	return (c.getNick() > this->getNick());
 }

@@ -5,7 +5,7 @@
 Channel::Channel(Client client, std::string name)
 :_name(name)
 {
-    _users.insert(std::pair<const Client &, int> (client, OPER));
+    _users.insert(std::make_pair(client, OPER));
     return ;
     // 초기화 리스트로 map을 초기화해줘야함(client &라서) 괜찮은가?
 }
@@ -25,8 +25,7 @@ bool Channel::checkAuth(const Client& client) const {
 }
 
 bool Channel::checkClient(std::string nick) {
-    _it = _users.begin();
-    for (_it; _it != _users.end(); _it++) {
+    for (_it = _users.begin(); _it != _users.end(); _it++) {
         if (_it->first.getNick() == nick)
             return (true);
     }
@@ -35,7 +34,7 @@ bool Channel::checkClient(std::string nick) {
 
 void Channel::addUser(const Client &client)
 {
-    _users.insert(std::pair<const Client&, int>(client, NORMAL));
+    _users.insert(std::make_pair(client, NORMAL));
     return ;
 }
 
@@ -45,8 +44,7 @@ void Channel::delUser(const Client &client) {
 }
 
 void Channel::delByNick(std::string nick) {
-    _it = _users.begin();
-    for (_it; _it != _users.end(); _it++)
+    for (_it = _users.begin(); _it != _users.end(); _it++)
     {
         if (_it->first.getNick() == nick)
             delUser(_it->first);
@@ -61,8 +59,7 @@ int Channel::getUserSize( void ) const {
 std::vector<int> Channel::getFds(int senderFd) {
     std::vector <int> fds;
 
-    _it = _users.begin();
-    for (_it; _it != _users.end(); _it++)
+    for (_it = _users.begin(); _it != _users.end(); _it++)
     {
         if (_it->first.getFd() == senderFd)
             continue;
@@ -72,12 +69,11 @@ std::vector<int> Channel::getFds(int senderFd) {
 }
 
 void Channel::opUser(std::string nick){
-    _it = _users.begin();
-    for (_it; _it != _users.end(); _it++) {
+    for (_it = _users.begin(); _it != _users.end(); _it++) {
         if (_it->first.getNick() == nick)
         {
             // 현재 second == oper인지확인해야하나?
-            _it->second == OPER;
+            _it->second = OPER;
             return ;
         }
     }
@@ -85,14 +81,24 @@ void Channel::opUser(std::string nick){
 }
 
 void Channel::deopUser(std::string nick){
-    _it = _users.begin();
-    for (_it; _it != _users.end(); _it++) {
+    for (_it = _users.begin(); _it != _users.end(); _it++) {
         if (_it->first.getNick() == nick)
         {
             // 현재 second == normal인지확인해야하나?
-            _it->second == NORMAL;
+            _it->second = NORMAL;
             return ;
         }
     }
     return ;
+}
+
+std::string Channel::getUsersNames(void) {
+    std::string msg;
+    for (_it = _users.begin(); _it != _users.end(); _it++) {
+        if(_it->second == OPER)
+            msg += "@";
+        msg += _it->first.getNick();
+        msg += " ";
+    }
+    return (msg);
 }

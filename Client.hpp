@@ -2,6 +2,7 @@
 #define CLIENT_H
 
 #include <string>
+#include "Define.hpp"
 
 class Client{
     private:
@@ -16,8 +17,10 @@ class Client{
 
         void    setNick(std::string nick);
         const std::string getNick() const;
-        const std::string getUser();
-        const int getFd() const;
+        const std::string getUser() const;
+        const std::string getIp() const;
+        int getFd() const;
+        bool operator<(const Client& c) const;
 };
 
 #endif

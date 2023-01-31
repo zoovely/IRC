@@ -1,14 +1,14 @@
 CXX = c++
-CXXFLAGS = -I. -g3 -Wall -Werror -Wextra
-SRCS =	main.cpp Server.cpp Client.cpp Channel.cpp Command.cpp 
-OBJS = ${SRCS:.c=.o}
-INCLUDES = Server.hpp Clien.hpp Channel.hpp
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
+SRCS = main.cpp Server.cpp Client.cpp Channel.cpp Command.cpp 
+OBJS = ${SRCS:.cpp=.o}
+INCLUDES = Server.hpp Client.hpp Channel.hpp Command.hpp Define.hpp
 NAME = ircserv
 
 RM = rm -f
 
 ${NAME}:	${OBJS}
-		${CC} -o ${NAME} ${OBJS} ${LDFLAGS}
+		${CXX} -o ${NAME} ${OBJS} ${CXXFLAGS}
 
 all:		${NAME}
 
