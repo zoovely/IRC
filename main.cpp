@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     
     while (1)
     {
-        ret = poll(serverPoll, OPEN_MAX , 500);
+        ret = poll(serverPoll, 100, 500);
         if (ret > 0)
         {
             if (serverPoll[serverFd].revents == POLLIN)
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        else
-            std::cout << "poll nothing return\n"; //나중에 지우기?
+        // else
+        //     std::cout << "poll nothing return\n"; //나중에 지우기?
     }
 }

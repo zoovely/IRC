@@ -45,6 +45,7 @@ int Server::acceptClient( void )
 	}
 	std::cout << "client #" << clientFd << " connected\n"; // 나중에 지우기  
 	setPollFd(clientFd, clientFd, POLLIN, 0);
+	
 	_poll[_serverFd].revents = 0;
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	// readClient(clientFd);
@@ -99,7 +100,9 @@ int Server::getClientByFd(int fd) {
 void	Server::executeCommand(int fd) {
 	Command	com(_readBuf);
 	int	type = com.checkMsgType();
+	std::cout << "fd :" << fd << "\n";
 	int	cIdx = getClientByFd(fd);
+	std::cout << "cIdx :" << cIdx << "\n";
 	switch (type)
 	{
 		case CONNECT:

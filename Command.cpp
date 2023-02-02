@@ -26,7 +26,7 @@ void Command::splitMsg(void) {
 		pos = _msg.find(" ", i);
 		newpos = _msg.find("\r\n", i);
 	}
-	_splitMsg.push_back(_msg.substr(i, _msg.length() - i));
+	_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
 	return ;
 }
 
@@ -61,6 +61,7 @@ int	Command::checkMsgType(void) {
 }
 
 void Command::sendFd(int fd, std::string str) {
+	std::cout << "send fd :" << fd << " msg :" << str << "\n";
 	int ret = send(fd, str.c_str(), str.size(), MSG_DONTWAIT);
 	if (ret == -1) {
 		std::cerr << str.c_str() << "\n";
@@ -151,9 +152,8 @@ int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {
 		return (-1);
 	}
 	ip = _splitMsg[i + 3];
-	std::cerr << "[ipip ][" <<  ip << "]] ip \n";
 	Client	nClient(nick, _splitMsg[i + 4].erase(0, 1), ip, fd); // 콜론 떼고 저장
-	std::cerr << " this is nClient : "<< nClient.getNick() << " " << nClient.getIp() << "\n";
+	std::cout << " this is nClient : "<< nClient.getNick() << " fd : " << nClient.getFd() << "\n";
 	cList.push_back(nClient);
 	// welcome msg 001, 002 전송
 	sendFd(fd, RPL_WELCOME(nick));
@@ -169,6 +169,7 @@ int Command::join(const Client &client, std::vector<Channel> &chList) {
 			chList[i].addUser(client);
 			std::vector<int> fds = chList[i].getFds(client.getFd());
 			sendAll(fds, RPL_JOIN(client.getNick(), client.getIp(), chName));
+			sendAll(fds, RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()));
 			break ;
 		}
 	}
@@ -178,8 +179,8 @@ int Command::join(const Client &client, std::vector<Channel> &chList) {
 		chList.push_back(ch);
 	}
 	sendFd(client.getFd(), RPL_JOIN(client.getNick(), client.getIp(), chName));
-	// std::cerr << chList[i].getUsersNames();
-	// sendFd(client.getFd(), RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()));
+	std::cout << RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()) << "\n"; // for test
+	sendFd(client.getFd(), RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()));
 	return (1);
 }
 
