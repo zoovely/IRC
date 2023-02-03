@@ -25,7 +25,8 @@
 #define PRIVCH  14
 #define NOTICE  15
 #define NOTICH  16
-
+#define MODE_I  17
+#define MODE_N  18
 
 class Command {
     private:
@@ -64,6 +65,8 @@ class Command {
         int privmsg(const Client &sender, const std::vector<Client> &cList);
         int notice(const Client &sender, const std::vector<Channel> &chList);
         int notice(const Client &sender, const std::vector<Client> &cList);
+        int modeI(const Client &sender);
+        int modeN(const Client &sender, const std::vector<Channel> &chList);
 };
 
 #endif

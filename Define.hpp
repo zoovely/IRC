@@ -4,11 +4,13 @@
 /* [WELCOME 001 - 002]*/
 # define RPL_WELCOME(nick)							    ":LAZYIRC 001 " + nick + " :Welcome to the Internet Relay Network " + nick + "\r\n"
 # define RPL_YOURHOST(nick)							    ":LAZYIRC 002 " + nick + " :Your host is LAZYIRC, running version 1.0\r\n"
+# define RPL_MODE_I(nick, ip)							":" + nick + "!" + nick + "@" + ip + " MODE " + nick + " :+i\r\n"
 
 /* [JOIN 353 - 366] */
 # define RPL_JOIN(nick, ip, channel)					":" + nick + "!" + nick + "@" + ip + " JOIN " + channel + "\r\n"
 # define RPL_NAMREPLY(nick, channel, users)			    ":LAZYIRC 353 " + nick + " = " + channel + " :" + users + "\r\n"
 # define RPL_ENDOFNAMES(nick, channel)                  ":LAZYIRC 366 " + nick + " " + channel + " :End of /NAMES list\r\n"
+# define RPL_MODE_N(nick, channel)						":LAZYIRC 324 " + nick + " " + channel + " +n\r\n"
 
 /* [PART] */ 
 /* 채널에 전송 */
@@ -22,7 +24,7 @@
 # define RPL_KICK(nick,user, ip, channel, kickuser, msg)":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + kickuser + msg + "\r\n"
 
 /* [NICK] */
-# define RPL_NICK(nick, user, ip, newnick)			    ":" + nick + "!" + user + "@" + ip + " NICK :" + newnick + "\r\n"
+# define RPL_NICK(nick, user, ip, newnick )			    ":" + nick + "!" + user + "@" + ip + " NICK :" + newnick + "\r\n"
 
 /* [LIST 321 - 323] */
 # define RPL_LISTSTART(nick)						    ":LAZYIRC 321 " + nick + " Channel : UsersNum\r\n"
@@ -30,8 +32,9 @@
 # define RPL_LISTEND(nick)							    ":LAZYIRC 323 " + nick + " :End of /LIST\r\n"
 
 /* [WHOIS] */
-# define RPL_WHOISUSER(nick, user, ip)				    ":LAZYIRC 311 * " + nick + " ~" + nick + ip + " * :" + user + "\r\n"
+# define RPL_WHOISUSER(nick, user, ip)				    ":LAZYIRC 311 nick "	 + nick + " ~" + nick + ip + " * :" + user + "\r\n"
 # define RPL_WHOISSERVER					            ":LAZYIRC 312 * * LAZYIRC :Sponserd by WHERE42 team\r\n"
+# define RPL_WHOISMODE(nick)							":LAZYIRC 379 " + nick + " " + nick + " :is using modes +i\r\n"
 # define RPL_ENDOFWHOIS								    ":LAZYIRC 318\r\n"
 
 /* [QUIT] */
