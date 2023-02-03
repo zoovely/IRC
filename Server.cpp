@@ -159,7 +159,7 @@ void	Server::executeCommand(int fd) {
 	}
 }
 
-struct pollfd* Server::getPll( void ) {
+struct pollfd* Server::getPoll( void ) {
 	return _poll;
 }
 
