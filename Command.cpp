@@ -147,10 +147,7 @@ int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {
 		return (-1);
 	}
 	if (checkValidClient(nick, cList) != -1) //이미 존재하는 이름
-	{
 		sendFd(fd, ERR_NICKNAMEINUSE(nick));
-		return (-1);
-	}
 	for (i = 0; i < _splitMsg.size(); i++) {
 		if (_splitMsg[i].compare("USER") == 0)
 			break;
@@ -161,7 +158,6 @@ int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {
 	}
 	ip = _splitMsg[i + 3];
 	Client	nClient(nick, _splitMsg[i + 4].erase(0, 1), ip, fd); // 콜론 떼고 저장
-	std::cout << " this is nClient : "<< nClient.getNick() << " fd : " << nClient.getFd() << "\n";
 	cList.push_back(nClient);
 	// welcome msg 001, 002 전송
 	sendFd(fd, RPL_WELCOME(nick));
@@ -274,7 +270,7 @@ int Command::kick(const Client &client, std::vector<Channel> &chList) {
     // nick에 대해서 강제 퇴장 메세지를 channel에 전송
 	std::string msg = "";
 	if (_splitMsg.size() > 3)
-		msg = _splitMsg[2]; // msg가 이게 맞는지?
+		msg = _splitMsg[3]; // msg가 이게 맞는지?
 	sendFd(client.getFd(), RPL_KICK(client.getNick(), client.getNick(), client.getIp(), chName, target, msg));
 	sendAll(channel.getFds(client.getFd()), RPL_KICK(client.getNick(), client.getNick(), client.getIp(), chName, target, msg));
 	channel.delByNick(target); // 유저 퇴장시키기
@@ -409,21 +405,11 @@ int Command::whois(const Client &client, const std::vector<Client> &cList) {
 	std::string msg;
 	int cFd = client.getFd();
 	std::string target = _splitMsg[1];
-	if (target == client.getNick()) 
-	{
-		// 내정보 센드 
-		msg = RPL_WHOISUSER(client.getNick(), client.getUser(), client.getIp());
-		sendFd(cFd, msg);
-		sendFd(cFd, RPL_WHOISSERVER);
-		sendFd(cFd, RPL_WHOISMODE(client.getNick()));
-		sendFd(cFd, RPL_ENDOFWHOIS);
-		return (1);
-	}
 	int cIdx = checkValidClient(target, cList);
 	if (cIdx != -1) {
 		// 이 클라이언트 정보 센드
 		Client temp = cList[cIdx];
-		msg = RPL_WHOISUSER(temp.getNick(), temp.getNick(), temp.getIp());
+		msg = RPL_WHOISUSER(temp.getNick(), temp.getUser(), temp.getIp());
 		sendFd(cFd, msg);
 		sendFd(cFd, RPL_WHOISSERVER);
 		sendFd(cFd, RPL_WHOISMODE(client.getNick()));
@@ -473,7 +459,7 @@ int Command::privmsg(const Client &sender, const std::vector<Channel> &chList) {
 		return (-1); // 센더가 그 채널에 없는거~!
 	}
 	std::vector<int> fds = channel.getFds(sender.getFd()); 
-  sendAll(channel.getFds(sender.getFd()),
+  	sendAll(channel.getFds(sender.getFd()),
     RPL_PRIVMSG(sender.getNick(), sender.getNick(), sender.getIp(), chName, _splitMsg[2]));
 	return (1);
 }
