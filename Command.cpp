@@ -213,6 +213,7 @@ int Command::join(const Client &client, std::vector<Channel> &chList) {
 void Command::delChannel(std::vector<Channel> &chList, Channel &channel) {
 	if (chList.size() == 1)
 	{
+		std::cout << "delchannel size 1????\n";
 		chList.clear();
 		return ;
 	}
@@ -375,7 +376,7 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 }
 
 // nick change nick
-int Command::nick(Client &client, const std::vector<Client> &cList, const std::vector<Channel> &chList) {
+int Command::nick(Client &client, std::vector<Client> &cList, const std::vector<Channel> &chList) {
 	std::string nickName = _splitMsg[1];
 	int cFd = client.getFd();
 	std::string msg;

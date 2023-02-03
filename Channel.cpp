@@ -50,8 +50,15 @@ bool Channel::checkClient(std::string nick) {
 
 void Channel::addUser(const Client& client)
 {
+    std::cerr << " === channel check before === ";
+    for (_it = _users.begin(); _it != _users.end(); _it++) {
+        std::cerr << " [" << _it->first.getNick() << "] [" << _it->second << "]\n";
+    }
+    std::cout << " === channel user check === \n";
+
     _users.insert(std::make_pair<const Client&, int>(client, NORMAL));
-    std::cerr << " === channel check === ";
+    
+    std::cerr << " === channel check after === ";
     for (_it = _users.begin(); _it != _users.end(); _it++) {
         std::cerr << " [" << _it->first.getNick() << "] [" << _it->second << "]\n";
     }
