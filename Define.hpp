@@ -19,7 +19,7 @@
 # define RPL_INVITED(nick, channel)					    ":LAZYIRC 345 " + nick + " " + channel + " :You have been invited to " + channel + "\r\n"
 
 /* [KICK]*/
-# define RPL_KICK(nick,user, ip, channel, kickuser, msg)":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + kickuser + msg + "\r\n"
+# define RPL_KICK(nick,user, ip, channel, kickuser, msg) ":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + kickuser + " " + msg + "\r\n"
 
 /* [NICK] */
 # define RPL_NICK(nick, user, ip, newnick)			    ":" + nick + "!" + user + "@" + ip + " NICK :" + newnick + "\r\n"
@@ -30,7 +30,7 @@
 # define RPL_LISTEND(nick)							    ":LAZYIRC 323 " + nick + " :End of /LIST\r\n"
 
 /* [WHOIS] */
-# define RPL_WHOISUSER(nick, user, ip)				    ":LAZYIRC 311 * " + nick + " ~" + nick + ip + " * :" + user + "\r\n"
+# define RPL_WHOISUSER(nick, user, ip)				    ":LAZYIRC 311 " + nick + " " + nick + " " + nick + " " + ip + " * :" + user + "\r\n"
 # define RPL_WHOISSERVER					            ":LAZYIRC 312 * * LAZYIRC :Sponserd by WHERE42 team\r\n"
 # define RPL_ENDOFWHOIS								    ":LAZYIRC 318\r\n"
 

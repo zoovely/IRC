@@ -18,9 +18,14 @@ const std::string Channel::getName(void) const {
 }
 
 bool Channel::checkAuth(const Client& client) const {
+    std::map<const Client&, int>::const_iterator testit;
+	for (testit = _users.begin(); testit != _users.end(); testit++) {
+		std::cout << testit->first.getNick() << " is " << testit->second << "\n";
+	}
+    
     std::cout << "checkAuth name: " << client.getNick() << std::endl;
     if (_users.find(client) != _users.end()) {
-        std::cout << "hello, i'm " + client.getNick();
+        std::cout << "hello, i'm " + client.getNick() << "\n";
         if (_users.find(client)->second == OPER)
         {
             std::cout << "chechehehe\n";
@@ -63,8 +68,10 @@ void Channel::delUser(const Client &client) {
 void Channel::delByNick(std::string nick) {
     for (_it = _users.begin(); _it != _users.end(); _it++)
     {
-        if (_it->first.getNick() == nick)
+        if (_it->first.getNick() == nick) {
             delUser(_it->first);
+            std::cout << "delUser call\n";
+        }
     }
     return ;
 }
@@ -80,7 +87,6 @@ std::vector<int> Channel::getFds(int senderFd) {
     {
         if (_it->first.getFd() == senderFd)
             continue;
-        std::cout << "nick :" << _it->first.getNick() << "push fds : " << _it->first.getFd() << "\n";
         fds.push_back(_it->first.getFd());
     }
     return (fds);
@@ -90,7 +96,7 @@ void Channel::opUser(std::string nick){
     for (_it = _users.begin(); _it != _users.end(); _it++) {
         if (_it->first.getNick() == nick)
         {
-            // 현재 second == oper인지확인해야하나?
+            std::cout << nick << " is op now\n";
             _it->second = OPER;
             return ;
         }

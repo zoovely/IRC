@@ -82,7 +82,7 @@ int	Server::readClient(int fd)
 		setPollFd(fd, -1, 0, 0);
 		return (-1);
 	}
-	std::cout << "buf : " << _readBuf << "\n"; // 나중에 지우기
+	std::cout << "buf : " << fd << "+" << _readBuf << "\n"; // 나중에 지우기
 	executeCommand(fd);
 	_poll[fd].revents = 0;
 	std::memset(_readBuf, 0, BUF);
