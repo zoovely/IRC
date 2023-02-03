@@ -44,7 +44,3 @@ class Server {
         int getClientByFd(int fd);
 };
 #endif
-
-// <cstdlib> int atoi( const char* str ); long is also possible
-                                        // long long = c++11;
-

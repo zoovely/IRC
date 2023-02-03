@@ -12,7 +12,7 @@ void Command::splitMsg(void) {
 	std::string::size_type pos = _msg.find(" " , 0);
 	std::string::size_type newpos = _msg.find("\r\n", 0);
 	int i = 0;
-	while (pos != std::string::npos && newpos != std::string::npos)
+	while (pos != std::string::npos || newpos != std::string::npos)
 	{
 		if (pos > newpos)
 		{
@@ -26,14 +26,14 @@ void Command::splitMsg(void) {
 		pos = _msg.find(" ", i);
 		newpos = _msg.find("\r\n", i);
 	}
-	_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
+	// _splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
   // lst msg follwing ":" should include all characters including space;
 	return ;
 }
 
 int	Command::checkMsgType(void) {
-	std::string	typeList[] = {"CAP", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
-	for (size_t i = 0; i < sizeof(typeList) / sizeof(std::string); i++) {
+	std::string typeList[] = {"CAP", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
+	for (size_t i = 0; i < sizeof(typeList)/sizeof(std::string); i++) {
 		if (_splitMsg[0].find(typeList[i]) != std::string::npos) {
 			switch (i)
 			{
@@ -170,7 +170,6 @@ int Command::join(const Client &client, std::vector<Channel> &chList) {
 			chList[i].addUser(client);
 			std::vector<int> fds = chList[i].getFds(client.getFd());
 			sendAll(fds, RPL_JOIN(client.getNick(), client.getIp(), chName));
-			sendAll(fds, RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()));
 			break ;
 		}
 	}
@@ -182,6 +181,7 @@ int Command::join(const Client &client, std::vector<Channel> &chList) {
 	sendFd(client.getFd(), RPL_JOIN(client.getNick(), client.getIp(), chName));
 	std::cout << RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()) << "\n"; // for test
 	sendFd(client.getFd(), RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()));
+	sendFd(client.getFd(), RPL_ENDOFNAMES(client.getNick(), chName));
 	return (1);
 }
 
@@ -214,11 +214,8 @@ int Command::part(const Client &client, std::vector<Channel> &chList) {
 		return (-1);
 	}
 	ch.delUser(client);
-	std::string msg = "";
-	if (_splitMsg.size() > 3)
-		msg = _splitMsg[2]; // msg가 이게 맞는지?
-	sendFd(client.getFd(), RPL_PART(client.getNick(), client.getIp(), msg));
-	sendAll(ch.getFds(client.getFd()), RPL_PART(client.getNick(), client.getIp(), msg));
+	sendFd(client.getFd(), RPL_PART(client.getNick(), client.getIp(), chName));
+	sendAll(ch.getFds(client.getFd()), RPL_PART(client.getNick(), client.getIp(), chName));
 	if (ch.getUserSize() == 0) // channel에 남은 사람이 있는지 확인
 		delChannel(chList, chList[chIdx]);
 	return (1);
@@ -306,6 +303,7 @@ int Command::op(const Client &client, std::vector<Channel> &chList) {
 	{ //정상작동
 		channel.opUser(nick); // 유저에게 op 부여
 		msg = RPL_OP(client.getNick(), client.getNick(), client.getIp(), chName, nick);
+		sendAll(channel.getFds(cFd), msg);
 	}
 	sendFd(cFd, msg);
 	return (1);
@@ -340,6 +338,7 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 	{
 		channel.deopUser(nick); //nick에게서 op권한 뺏기
 		msg = RPL_DEOP(client.getNick(), client.getNick(), client.getIp(), chName, nick);
+		sendAll(channel.getFds(cFd), msg);
 		//정상 작동 send
 	}
 	sendFd(cFd, msg);
@@ -370,9 +369,8 @@ int Command::nick(Client &client, const std::vector<Client> &cList) {
 	}
 	else 
 	{
-		msg = RPL_NICK(client.getNick(), client.getNick(), client.getIp(), nickName, _splitMsg[4]);
+		msg = RPL_NICK(client.getNick(), client.getNick(), client.getIp(), nickName);
 		sendFd(cFd, msg);
-		// msg가 4에 들어가나요?
 		client.setNick(nickName);
 	}
 	return (1); // 중복되지 않음

@@ -5,8 +5,9 @@
 Channel::Channel(const Client& client, std::string name)
 :_name(name)
 {
-    std::pair<const Client&, int> newpair(client, OPER);
-    _users.insert(newpair);
+    _users.insert(std::make_pair<const Client&, int>(client, OPER));
+    std::cerr << "channel creation: [" << _users.begin()->first.getNick() << "] [" << _users.begin()->second << "]\n";
+
     return ;
     // 초기화 리스트로 map을 초기화해줘야함(client &라서) 괜찮은가? 무슨말이지?
     // makepair로 insert 를하면 makepair 가 레퍼런스로 안받아서 데이터가 사라지는듯? 확실치않음 근데안됨 이렇게하면 됨;
@@ -17,12 +18,20 @@ const std::string Channel::getName(void) const {
 }
 
 bool Channel::checkAuth(const Client& client) const {
+    std::cout << "checkAuth name: " << client.getNick() << std::endl;
     if (_users.find(client) != _users.end()) {
+        std::cout << "hello, i'm " + client.getNick();
         if (_users.find(client)->second == OPER)
+        {
+            std::cout << "chechehehe\n";
             return (true);
-        else
+        }
+        else {
+            std::cout << "i'm not a oper!!\n";
             return (false);
+        }
     }
+    std::cout << "not found operator\n";
 	return (false);
 }
 
@@ -36,13 +45,12 @@ bool Channel::checkClient(std::string nick) {
 
 void Channel::addUser(const Client& client)
 {
-    std::pair<const Client&, int> newpair(client, NORMAL); // makepair 에서 수정함
-    std::cout << "adduser nick :" << client.getNick() << " fd :" << client.getFd() << "\n";
-    _users.insert(newpair);
+    _users.insert(std::make_pair<const Client&, int>(client, NORMAL));
+    std::cerr << " === channel check === ";
     for (_it = _users.begin(); _it != _users.end(); _it++) {
-        std::cout << _it->first.getNick();
-    }   
-    std::cout << "\n";
+        std::cerr << " [" << _it->first.getNick() << "] [" << _it->second << "]\n";
+    }
+    std::cout << " === channel user check === \n";
     std::cout << "size :" << _users.size() << "maxsize :" << _users.max_size() << "\n";
     return ;
 }

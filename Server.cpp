@@ -100,9 +100,7 @@ int Server::getClientByFd(int fd) {
 void	Server::executeCommand(int fd) {
 	Command	com(_readBuf);
 	int	type = com.checkMsgType();
-	std::cout << "fd :" << fd << "\n";
 	int	cIdx = getClientByFd(fd);
-	std::cout << "cIdx :" << cIdx << "\n";
 	switch (type)
 	{
 		case CONNECT:

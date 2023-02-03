@@ -12,7 +12,7 @@
 
 /* [PART] */ 
 /* 채널에 전송 */
-# define RPL_PART(nick, ip, msg)					    ":" + nick + "!" + nick + "@" + ip + " PART " + msg + "\r\n"
+# define RPL_PART(nick, ip, channel)			    ":" + nick + "!" + nick + "@" + ip + " PART :" + channel + "\r\n"
 
 /* [INVITE 341 - 345 ]*/
 # define RPL_INVITING(nick, channel)				    ":LAZYIRC 341 " + nick + " " + channel + " :Inviting " + nick + " to " + channel + "\r\n"
@@ -22,7 +22,7 @@
 # define RPL_KICK(nick,user, ip, channel, kickuser, msg)":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + kickuser + msg + "\r\n"
 
 /* [NICK] */
-# define RPL_NICK(nick, user, ip, newnick, msg)			":" + nick + "!" + user + "@" + ip + " NICK " + newnick + msg + "\r\n"
+# define RPL_NICK(nick, user, ip, newnick)			    ":" + nick + "!" + user + "@" + ip + " NICK :" + newnick + "\r\n"
 
 /* [LIST 321 - 323] */
 # define RPL_LISTSTART(nick)						    ":LAZYIRC 321 " + nick + " Channel : UsersNum\r\n"
@@ -61,8 +61,8 @@
 # define ERR_UNKNOWNCOMMAND							    ":LAZYIRC 421 * :Command not found\r\n"
 
 # define ERR_NONICKNAMEGIVEN						    ":LAZYIRC 431 :No nickname given\r\n"
-# define ERR_ERRONEUSNICKNAME(nick)					    ":LAZYIRC 432 " + nick + " :Erroneus nickname\r\n"
-# define ERR_NICKNAMEINUSE(nick)					    ":LAZYIRC 433 " + nick + " :Nickname is already in use\r\n"
+# define ERR_ERRONEUSNICKNAME(nick)					    ":LAZYIRC 432 " + nick + " :" + nick + " is Erroneus nickname\r\n"
+# define ERR_NICKNAMEINUSE(nick)					    ":LAZYIRC 433 " + nick + " :" + nick + "\r\n"
 # define ERR_NICKCOLLISION(nick)					    ":LAZYIRC 436 " + nick + " :Nickname collision KILL\r\n"
 # define ERR_USERNOTINCHANNEL(nick, channel)            ":LAZYIRC 441 " + nick + " " + channel + " :They aren't on that channel\r\n"
 # define ERR_NOTONCHANNEL(nick, channel)			    ":LAZYIRC 442 " + nick + " " + channel + " :You're not on that channel\r\n"
