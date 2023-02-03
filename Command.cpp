@@ -11,8 +11,9 @@ Command::Command(std::string msg) {
 void Command::splitMsg(void) {
 	std::string::size_type pos = _msg.find(" " , 0);
 	std::string::size_type newpos = _msg.find("\r\n", 0);
+	std::string::size_type colone = _msg.find(":", 0);
 	int i = 0;
-	while (pos != std::string::npos || newpos != std::string::npos)
+	while ((pos != std::string::npos || newpos != std::string::npos) && pos < colone)
 	{
 		if (pos > newpos)
 		{
@@ -26,6 +27,8 @@ void Command::splitMsg(void) {
 		pos = _msg.find(" ", i);
 		newpos = _msg.find("\r\n", i);
 	}
+	if (colone != std::string::npos)
+		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone -2));
 	// _splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
   // lst msg follwing ":" should include all characters including space;
 	return ;
@@ -42,6 +45,10 @@ int	Command::checkMsgType(void) {
 						return (OP);
 					else if (_splitMsg[2].find("-o", 0) != std::string::npos)
 						return (DEOP);
+					else if (_splitMsg[2].find("+i", 0) != std::string::npos)
+						return (MODE_I);
+					else if (_splitMsg[1].find("#", 0) != std::string::npos)
+						return (MODE_N);
 					break;
 				case 11:
 					if (_splitMsg[1].find("#", 0) == std::string::npos)
@@ -208,16 +215,18 @@ int Command::part(const Client &client, std::vector<Channel> &chList) {
 		sendFd(client.getFd(), ERR_NOSUCHCHANNEL(client.getNick(), chName));
 		return (-1);
 	}
-	Channel ch = chList[chIdx];
+	Channel &ch = chList[chIdx];
 	if (!ch.checkClient(client.getNick())) { // 클라이언트가 그 채널에 없는 경우
 		sendFd(client.getFd(), ERR_NOTONCHANNEL(client.getNick(), chName));
 		return (-1);
 	}
 	ch.delUser(client);
 	sendFd(client.getFd(), RPL_PART(client.getNick(), client.getIp(), chName));
-	sendAll(ch.getFds(client.getFd()), RPL_PART(client.getNick(), client.getIp(), chName));
-	if (ch.getUserSize() == 0) // channel에 남은 사람이 있는지 확인
+	if (ch.getUserSize() == 0) { // channel에 남은 사람이 있는지 확인
 		delChannel(chList, chList[chIdx]);
+		return (1);
+	}
+	sendAll(ch.getFds(client.getFd()), RPL_PART(client.getNick(), client.getIp(), chName));
 	return (1);
 }
 
@@ -253,7 +262,7 @@ int Command::kick(const Client &client, std::vector<Channel> &chList) {
 		sendFd(client.getFd(), ERR_NOSUCHCHANNEL(client.getNick(), chName));
 		return (-1);
 	}
-	Channel channel = chList[chIdx];
+	Channel &channel = chList[chIdx];
 	if (!chList[chIdx].checkAuth(client)) { // op 권한이 없음
 		sendFd(client.getFd(), ERR_CHANOPRIVSNEEDED(client.getNick(), chName));
 		return (-1);
@@ -286,7 +295,7 @@ int Command::op(const Client &client, std::vector<Channel> &chList) {
 		sendFd(cFd, msg);
 		return (-1); // channel이 없을 경우
 	}
-	Channel channel = chList[chIdx];
+	Channel &channel = chList[chIdx];
 	if (channel.checkAuth(client) == false)
 	{
 		msg = ERR_CHANOPRIVSNEEDED(client.getNick(), chName);
@@ -321,7 +330,7 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 		sendFd(cFd, msg);
 		return (-1); //channel이 없을 경우
 	}
-	Channel channel = chList[chIdx];
+	Channel &channel = chList[chIdx];
 	if (channel.checkAuth(client) == false)
 	{
 		msg = ERR_CHANOPRIVSNEEDED(client.getNick(), chName);
@@ -406,6 +415,7 @@ int Command::whois(const Client &client, const std::vector<Client> &cList) {
 		msg = RPL_WHOISUSER(client.getNick(), client.getUser(), client.getIp());
 		sendFd(cFd, msg);
 		sendFd(cFd, RPL_WHOISSERVER);
+		sendFd(cFd, RPL_WHOISMODE(client.getNick()));
 		sendFd(cFd, RPL_ENDOFWHOIS);
 		return (1);
 	}
@@ -416,12 +426,37 @@ int Command::whois(const Client &client, const std::vector<Client> &cList) {
 		msg = RPL_WHOISUSER(temp.getNick(), temp.getNick(), temp.getIp());
 		sendFd(cFd, msg);
 		sendFd(cFd, RPL_WHOISSERVER);
+		sendFd(cFd, RPL_WHOISMODE(client.getNick()));
 		sendFd(cFd, RPL_ENDOFWHOIS);
 		return (1);
 	}
 	msg = ERR_NOSUCHNICK(client.getNick(), target);
 	sendFd(cFd, msg);
 	return (-1); // 이런 nick 가진 유저 못찾으면~!
+}
+
+
+int Command::quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList) {
+	std::vector<int>	mList;
+	std::vector<int>	temp;
+	
+	for (size_t i = 0; i < chList.size(); i++) {
+		chList[i].delByNick(client.getNick());
+		temp = chList[i].getFds(client.getFd());
+		mList.insert(mList.end(), temp.begin(), temp.end()); // 본인 빼고 채널 사람들 넣기
+		if (chList[i].getUserSize() == 0)
+			chList.erase(chList.begin() + i); // channel에 남은 사람이 있는지 확인
+	}
+	sort(mList.begin(), mList.end());
+	mList.erase(unique(mList.begin(), mList.end()), mList.end()); // 중복 제거
+	sendAll(mList, RPL_QUIT(client.getNick(), client.getNick(), client.getIp(), _splitMsg[1]));
+	cList.erase(checkValidClient(client.getNick(), cList) + cList.begin());
+	return (1);
+} 
+
+int Command::ping(const Client &client) {
+	sendFd(client.getFd(), RPL_PONG(_splitMsg[1]));
+	return (1);
 }
 
 // privMsg #chName msg
@@ -488,25 +523,20 @@ int Command::notice(const Client &sender, const std::vector<Client> &cList) {
 	return (1);
 }
 
-int Command::quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList) {
-	std::vector<int>	mList;
-	std::vector<int>	temp;
-	
-	for (size_t i = 0; i < chList.size(); i++) {
-		chList[i].delByNick(client.getNick());
-		temp = chList[i].getFds(client.getFd());
-		mList.insert(mList.end(), temp.begin(), temp.end()); // 본인 빼고 채널 사람들 넣기
-		if (chList[i].getUserSize() == 0)
-			chList.erase(chList.begin() + i); // channel에 남은 사람이 있는지 확인
-	}
-	sort(mList.begin(), mList.end());
-	mList.erase(unique(mList.begin(), mList.end()), mList.end()); // 중복 제거
-	sendAll(mList, RPL_QUIT(client.getNick(), client.getNick(), client.getIp(), _splitMsg[1]));
-	cList.erase(checkValidClient(client.getNick(), cList) + cList.begin());
+int Command::modeI(const Client &sender) {
+	sendFd(sender.getFd(), RPL_MODE_I(sender.getNick(), sender.getIp()));
 	return (1);
-} 
+}
 
-int Command::ping(const Client &client) {
-	sendFd(client.getFd(), RPL_PONG(_splitMsg[1]));
+int Command::modeN(const Client &sender , const std::vector<Channel> &chList) {
+	std::string chName = _splitMsg[1];
+	int cFd = sender.getFd();
+	int chIdx = checkValidChannel(chName, chList);
+	if (chIdx == -1)
+	{
+		sendFd(cFd, ERR_NOSUCHNICK(sender.getNick(), chName));
+		return (-1); // channel이 없을 경우
+	}
+	sendFd(cFd, RPL_MODE_N(sender.getNick(), chName));
 	return (1);
 }
