@@ -27,12 +27,13 @@ void Command::splitMsg(void) {
 		newpos = _msg.find("\r\n", i);
 	}
 	_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
+  // lst msg follwing ":" should include all characters including space;
 	return ;
 }
 
 int	Command::checkMsgType(void) {
 	std::string	typeList[] = {"CAP", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
-	for (size_t i = 0; i < typeList->length(); i++) {
+	for (size_t i = 0; i < sizeof(typeList) / sizeof(std::string); i++) {
 		if (_splitMsg[0].find(typeList[i]) != std::string::npos) {
 			switch (i)
 			{
@@ -438,10 +439,9 @@ int Command::privmsg(const Client &sender, const std::vector<Channel> &chList) {
 		sendFd(sender.getFd(), ERR_NOTONCHANNEL(sender.getNick(), chName));
 		return (-1); // 센더가 그 채널에 없는거~!
 	}
-	std::vector<int> fds = channel.getFds(sender.getFd());  
-	for (size_t i = 0; i < fds.size() - 1; i++) {
-		sendFd(fds[i], RPL_PRIVMSG(sender.getNick(), sender.getNick(), sender.getIp(), chName, _splitMsg[2]));
-	}
+	std::vector<int> fds = channel.getFds(sender.getFd()); 
+  sendAll(channel.getFds(sender.getFd()),
+    RPL_PRIVMSG(sender.getNick(), sender.getNick(), sender.getIp(), chName, _splitMsg[2]));
 	return (1);
 }
 
