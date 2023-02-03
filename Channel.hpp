@@ -22,7 +22,7 @@ class Channel {
     public:
         Channel(const Client& client, std::string name);
         ~Channel(void) {}; // 이거 없애던지 나중에 소멸자 구현하던지
-        std::vector<int> getFds(int senderFd);
+        std::vector<int> getFds(int senderFd) const;
         const std::string getName(void) const;
         bool checkAuth(const Client& client) const;
         bool checkClient(std::string nick);

@@ -7,7 +7,7 @@ Channel::Channel(const Client& client, std::string name)
 {
     _users.insert(std::make_pair<const Client&, int>(client, OPER));
     std::cerr << "channel creation: [" << _users.begin()->first.getNick() << "] [" << _users.begin()->second << "]\n";
-    std::cerr << name << std::endl;
+    std::cerr << "channame" << name << std::endl;
     return ;
     // 초기화 리스트로 map을 초기화해줘야함(client &라서) 괜찮은가? 무슨말이지?
     // makepair로 insert 를하면 makepair 가 레퍼런스로 안받아서 데이터가 사라지는듯? 확실치않음 근데안됨 이렇게하면 됨;
@@ -70,7 +70,7 @@ void Channel::delByNick(std::string nick) {
     {
         if (_it->first.getNick() == nick) {
             delUser(_it->first);
-            std::cout << "delUser call\n";
+            break;
         }
     }
     return ;
@@ -80,14 +80,15 @@ int Channel::getUserSize( void ) const {
     return _users.size();
 }
 
-std::vector<int> Channel::getFds(int senderFd) {
+std::vector<int> Channel::getFds(int senderFd) const {
     std::vector <int> fds;
+    std::map<const Client&, int>::const_iterator it;
 
-    for (_it = _users.begin(); _it != _users.end(); _it++)
+    for (it = _users.begin(); it != _users.end(); it++)
     {
-        if (_it->first.getFd() == senderFd)
+        if (it->first.getFd() == senderFd)
             continue;
-        fds.push_back(_it->first.getFd());
+        fds.push_back(it->first.getFd());
     }
     return (fds);
 }

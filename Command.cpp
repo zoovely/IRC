@@ -27,9 +27,11 @@ void Command::splitMsg(void) {
 		newpos = _msg.find("\r\n", i);
 	}
 	if (colone != std::string::npos)
-		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone - 2));
+		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone -2));
 	else
 		_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2));
+	// _splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
+  // lst msg follwing ":" should include all characters including space;
 	return ;
 }
 
@@ -286,7 +288,7 @@ int Command::kick(const Client &client, std::vector<Channel> &chList) {
 		return (-1);
 	}
 	if (!channel.checkClient(target)) { // 퇴장할 유저가 그 채널에 없는 경우
-		sendFd(client.getFd(), ERR_NOTONCHANNEL(client.getNick(), chName));
+		sendFd(client.getFd(), ERR_USERNOTINCHANNEL(client.getNick(), chName));
 		return (-1);
 	}
     // nick에 대해서 강제 퇴장 메세지를 channel에 전송
@@ -373,7 +375,7 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 }
 
 // nick change nick
-int Command::nick(Client &client, std::vector<Client> &cList) {
+int Command::nick(Client &client, const std::vector<Client> &cList, const std::vector<Channel> &chList) {
 	std::string nickName = _splitMsg[1];
 	int cFd = client.getFd();
 	std::string msg;
@@ -402,12 +404,22 @@ int Command::nick(Client &client, std::vector<Client> &cList) {
 	}
 	else 
 	{
+		std::vector<int>	mList;
+		std::vector<int>	temp;
+        std::vector<const Channel>::const_iterator it;
+
+		for (it = chList.begin(); it < chList.end(); it++) {
+			temp = it->getFds(client.getFd());
+			mList.insert(mList.end(), temp.begin(), temp.end()); // 본인 빼고 채널 사람들 넣기
+		}
+		sort(mList.begin(), mList.end());
+		mList.erase(unique(mList.begin(), mList.end()), mList.end()); // 중복 제거
 		msg = RPL_NICK(client.getNick(), client.getNick(), client.getIp(), nickName);
 		sendFd(cFd, msg);
+		sendAll(mList, msg);
 		client.setNick(nickName);
 	}
 	return (1); // 중복되지 않음
-	// ERR_NICKCOLLISION (436) : 뭔지 모르겠음
 }
 
 // list

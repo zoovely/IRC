@@ -57,7 +57,7 @@ class Command {
         int part(const Client &client, std::vector<Channel> &chList); // channel에 남은 사람이 있는지 확인
         int invite(const Client &client, const std::vector<Channel> &chList, const std::vector<Client> &cList);
         int kick(const Client &client, std::vector<Channel> &chList); // channel에 남은 사람이 있는지 확인 
-        int nick(Client &client, std::vector<Client> &cList);
+        int nick(Client &client, const std::vector<Client> &cList, const std::vector<Channel> &chList);
         int list(const Client &client, const std::vector<Channel> &chList);
         int whois(const Client &client, const std::vector<Client> &cList);
         int quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList); // channel에 남은 사람이 있는지 확인 
