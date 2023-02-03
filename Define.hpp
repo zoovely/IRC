@@ -17,14 +17,14 @@
 # define RPL_PART(nick, ip, channel)			        ":" + nick + "!" + nick + "@" + ip + " PART :" + channel + "\r\n"
 
 /* [INVITE 341 - 345 ]*/
-# define RPL_INVITING(nick, channel)				    ":LAZYIRC 341 " + nick + " " + channel + " :Inviting " + nick + " to " + channel + "\r\n"
-# define RPL_INVITED(nick, channel)					    ":LAZYIRC 345 " + nick + " " + channel + " :You have been invited to " + channel + "\r\n"
+# define RPL_INVITING(nick, target, channel)		    ":LAZYIRC 341 " + nick + " " + target + " " + channel + "\r\n"
+# define RPL_INVITED(nick, channel)			            ":LAZYIRC 345 " + nick + " :You have been invited to " + channel + "\r\n"
 
 /* [KICK]*/
 # define RPL_KICK(nick,user, ip, channel, kickuser, msg) ":" + nick + "!" + user + "@" + ip + " KICK " + channel + " " + kickuser + " " + msg + "\r\n"
 
 /* [NICK] */
-# define RPL_NICK(nick, user, ip, newnick )			    ":" + nick + "!" + user + "@" + ip + " NICK :" + newnick + "\r\n"
+# define RPL_NICK(nick, user, ip, newnick)			    ":" + nick + "!" + user + "@" + ip + " NICK :" + newnick + "\r\n"
 
 /* [LIST 321 - 323] */
 # define RPL_LISTSTART(nick)						    ":LAZYIRC 321 " + nick + " Channel : UsersNum\r\n"
@@ -54,7 +54,7 @@
 # define RPL_NOTICE(nick, user, ip, receive, msg)		":" + nick + "!" + user + "@" + ip + " NOTICE " + receive + " " + msg + "\r\n"
 
 /* [ERR_MSG 401 - 506]*/
-# define ERR_NOSUCHNICK(nick, target)				    ":LAZYIRC 401 " + nick + " " + target + " :No such nick/channel\r\n"
+# define ERR_NOSUCHNICK(nick, target)				    ":LAZYIRC 401 " + nick + " " + target + " :No such nick\r\n"
 # define ERR_NOSUCHSERVER(serv)						    ":LAZYIRC 402 " + serv + " :No such server\r\n"
 # define ERR_NOSUCHCHANNEL(nick, channel)			    ":LAZYIRC 403 " + nick + " " + channel + " :No such channel\r\n"
 # define ERR_CANNOTSENDTOCHAN(nick, channel)		    ":LAZYIRC 404 " + nick + " " + channel + " :Cannot send to channel\r\n"

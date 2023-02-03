@@ -1,11 +1,10 @@
 #include "Command.hpp"
 #include <iostream>
+#include <algorithm>
 
 Command::Command(std::string msg) {
 	_msg = msg;
 	splitMsg();
-	// for (size_t i = 0; i < _splitMsg.size(); i++)
-	// 	std::cout << i << _splitMsg[i] << "\n";
 }
 
 void Command::splitMsg(void) {
@@ -28,19 +27,19 @@ void Command::splitMsg(void) {
 		newpos = _msg.find("\r\n", i);
 	}
 	if (colone != std::string::npos)
-		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone -2));
-	// _splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
-  // lst msg follwing ":" should include all characters including space;
+		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone - 2));
+	else
+		_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2));
 	return ;
 }
 
 int	Command::checkMsgType(void) {
-	std::string typeList[] = {"CAP", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
+	std::string typeList[] = {"CAP", "PASS", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
 	for (size_t i = 0; i < sizeof(typeList)/sizeof(std::string); i++) {
 		if (_splitMsg[0].find(typeList[i]) != std::string::npos) {
 			switch (i)
 			{
-				case 10:
+				case 11:
 					if (_splitMsg[2].find("+o", 0) != std::string::npos)
 						return (OP);
 					else if (_splitMsg[2].find("-o", 0) != std::string::npos)
@@ -50,12 +49,12 @@ int	Command::checkMsgType(void) {
 					else if (_splitMsg[1].find("#", 0) != std::string::npos)
 						return (MODE_N);
 					break;
-				case 11:
+				case 12:
 					if (_splitMsg[1].find("#", 0) == std::string::npos)
 						return (PRIVMSG);
 					else
 						return (PRIVCH);
-				case 12:
+				case 13:
 					if (_splitMsg[1].find("#", 0) == std::string::npos)
 						return (NOTICE);
 					else
@@ -73,9 +72,7 @@ void Command::sendFd(int fd, std::string str) {
 	int ret = send(fd, str.c_str(), str.size(), MSG_DONTWAIT);
 	if (ret == -1) {
 		std::cerr << str.c_str() << "\n";
-		std::cout << "send failed\n";
-		//close (fd); 
-		// client를 찾아서 client list에서 삭제해줘야함.
+		std::cerr << "send failed\n";
 	}
 }
 
@@ -117,18 +114,37 @@ int	Command::checkValidNick(const std::string nick) {
 	return (1);
 }
 
+int Command::getClientByFd(int fd, std::vector<Client> cList) {
+	for(size_t i = 0; i < cList.size(); i++) {
+		if (cList[i].getFd() == fd)
+			return (i);
+	}
+	return (-1);
+}
+
 //command list 
-int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {
+int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {	
+	Client nClient("", "", "", fd, true);
+	cList.push_back(nClient);
+	if (_splitMsg.size() != 2 && _splitMsg[2] == "PASS") { // 
+		pass(cList.back(), pwd, cList, cList.size() - 1);
+	}
+	return (1);
+}
+
+int Command::pass(Client &client, std::string pwd, std::vector<Client> &cList, int idx) {
 	size_t i;
 	std::string nick = "";
 	std::string	ip = "";
-
+	if (client.getFlag() == false)
+		return (1);
 	for (i = 0; i < _splitMsg.size(); i++) {
 		if (_splitMsg[i].compare("PASS") == 0)
 			break;
 	}
 	if (i == _splitMsg.size() || _splitMsg[i + 1].compare(pwd) != 0) {
-		sendFd(fd, ERR_PASSWDMISMATCH);
+		sendFd(client.getFd(), ERR_PASSWDMISMATCH);
+		cList.erase(idx + cList.begin());
 		return (-1);
 	}
 	for (i = 0; i < _splitMsg.size(); i++) {
@@ -137,38 +153,42 @@ int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {
 	}
 	if (i == _splitMsg.size()) //nick 없음
 	{
-		sendFd(fd, ERR_NONICKNAMEGIVEN);
+		sendFd(client.getFd(), ERR_NONICKNAMEGIVEN);
+		cList.erase(idx + cList.begin());
 		return (-1);
 	}
 	nick = _splitMsg[i + 1];
 	if (checkValidNick(nick) == -1) //nick 규칙 안맞음
 	{
-		sendFd(fd, ERR_ERRONEUSNICKNAME(nick));
+		sendFd(client.getFd(), ERR_ERRONEUSNICKNAME(nick));
+		cList.erase(idx + cList.begin());
 		return (-1);
 	}
 	if (checkValidClient(nick, cList) != -1) //이미 존재하는 이름
-		sendFd(fd, ERR_NICKNAMEINUSE(nick));
+		sendFd(client.getFd(), ERR_NICKNAMEINUSE(nick));
 	for (i = 0; i < _splitMsg.size(); i++) {
 		if (_splitMsg[i].compare("USER") == 0)
 			break;
 	}
 	if (i == _splitMsg.size()) {
-		// err msg type?
+		// err msg type? user keyword가 안들어 왔을 경우?
+		cList.erase(idx + cList.begin());
 		return (-1);
 	}
 	ip = _splitMsg[i + 3];
-	Client	nClient(nick, _splitMsg[i + 4].erase(0, 1), ip, fd); // 콜론 떼고 저장
-	cList.push_back(nClient);
 	// welcome msg 001, 002 전송
-	sendFd(fd, RPL_WELCOME(nick));
-	sendFd(fd, RPL_YOURHOST(nick));
+	
+	client.setInfo(nick, _splitMsg[i + 4].erase(0, 1), ip, false);
+	sendFd(client.getFd(), RPL_WELCOME(nick));
+	sendFd(client.getFd(), RPL_YOURHOST(nick));
 	return (1);
 }
+
 
 int Command::join(const Client &client, std::vector<Channel> &chList) {
 	std::string chName = _splitMsg[1];
 	size_t i;
-	for(i = 0; i < chList.size(); i++) {
+	for (i = 0; i < chList.size(); i++) {
 		if (chList[i].getName() == chName) {
 			chList[i].addUser(client);
 			std::vector<int> fds = chList[i].getFds(client.getFd());
@@ -182,7 +202,7 @@ int Command::join(const Client &client, std::vector<Channel> &chList) {
 		chList.push_back(ch);
 	}
 	sendFd(client.getFd(), RPL_JOIN(client.getNick(), client.getIp(), chName));
-	std::cout << RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()) << "\n"; // for test
+	// std::cout << RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()) << "\n"; // for test
 	sendFd(client.getFd(), RPL_NAMREPLY(client.getNick(), chName, chList[i].getUsersNames()));
 	sendFd(client.getFd(), RPL_ENDOFNAMES(client.getNick(), chName));
 	return (1);
@@ -230,6 +250,7 @@ int Command::part(const Client &client, std::vector<Channel> &chList) {
 int Command::invite(const Client &client, const std::vector<Channel> &chList, const std::vector<Client> &cList) {
 	std::string target = _splitMsg[1];
 	std::string chName = _splitMsg[2];
+
 	int chIdx = checkValidChannel(chName, chList);
 	if (chIdx == -1) {
 		sendFd(client.getFd(), ERR_NOSUCHCHANNEL(client.getNick(), chName));
@@ -244,8 +265,9 @@ int Command::invite(const Client &client, const std::vector<Channel> &chList, co
 		sendFd(client.getFd(), ERR_NOSUCHNICK(client.getNick(), target));
 		return (-1);
 	}
-	sendFd(client.getFd(), RPL_INVITING(client.getNick(), chName));
-	sendFd(cList[targetIdx].getFd(), RPL_INVITED(client.getNick(), chName)); // 유저가 이미 있는 채널 인바이트 에러 처리 해야한댔나?
+	sendFd(client.getFd(), RPL_INVITING(client.getNick(), target, chName));
+	sendFd(cList[targetIdx].getFd(), RPL_INVITED(client.getNick(), chName)); 
+	// 유저가 이미 있는 채널 인바이트 에러 처리 해야한댔나?
 	return (1);
 }
 
@@ -351,10 +373,16 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 }
 
 // nick change nick
-int Command::nick(Client &client, const std::vector<Client> &cList) {
+int Command::nick(Client &client, std::vector<Client> &cList) {
 	std::string nickName = _splitMsg[1];
 	int cFd = client.getFd();
 	std::string msg;
+
+	if (client.getFlag()) {
+		sendFd(cFd, ERR_PASSWDMISMATCH);
+		cList.erase(getClientByFd(cFd, cList) + cList.begin());
+		return (-1);
+	} 
 	if (nickName.empty() == true)
 	{
 		sendFd(cFd, ERR_NONICKNAMEGIVEN);
@@ -367,7 +395,7 @@ int Command::nick(Client &client, const std::vector<Client> &cList) {
 		return (-1); // 중복된 닉네임이 있을 경우
 	}
 	if (checkValidNick(nickName) == -1)
-	{
+	{	
 		msg = ERR_ERRONEUSNICKNAME(nickName);
 		sendFd(cFd, msg);
 		return (-1); // 유효하지 않은 nickname이 들어올 경우
@@ -402,25 +430,21 @@ int Command::list(const Client &client, const std::vector<Channel> &chList) {
 
 // whois nick
 int Command::whois(const Client &client, const std::vector<Client> &cList) {
-	std::string msg;
 	int cFd = client.getFd();
 	std::string target = _splitMsg[1];
 	int cIdx = checkValidClient(target, cList);
-	if (cIdx != -1) {
-		// 이 클라이언트 정보 센드
-		Client temp = cList[cIdx];
-		msg = RPL_WHOISUSER(temp.getNick(), temp.getUser(), temp.getIp());
-		sendFd(cFd, msg);
-		sendFd(cFd, RPL_WHOISSERVER);
-		sendFd(cFd, RPL_WHOISMODE(client.getNick()));
-		sendFd(cFd, RPL_ENDOFWHOIS);
-		return (1);
+	if (cIdx == -1) {
+		sendFd(cFd, ERR_NOSUCHNICK(client.getNick(), target));
+		return (-1); // 이런 nick 가진 유저 못찾으면~!
 	}
-	msg = ERR_NOSUCHNICK(client.getNick(), target);
-	sendFd(cFd, msg);
-	return (-1); // 이런 nick 가진 유저 못찾으면~!
+	// 이 클라이언트 정보 센드
+	Client temp = cList[cIdx];
+	sendFd(cFd, RPL_WHOISUSER(temp.getNick(), temp.getUser(), temp.getIp()));
+	sendFd(cFd, RPL_WHOISSERVER);
+	sendFd(cFd, RPL_WHOISMODE(temp.getNick()));
+	sendFd(cFd, RPL_ENDOFWHOIS);
+	return (1);
 }
-
 
 int Command::quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList) {
 	std::vector<int>	mList;
@@ -435,7 +459,10 @@ int Command::quit(Client &client, std::vector<Channel> &chList, std::vector<Clie
 	}
 	sort(mList.begin(), mList.end());
 	mList.erase(unique(mList.begin(), mList.end()), mList.end()); // 중복 제거
-	sendAll(mList, RPL_QUIT(client.getNick(), client.getNick(), client.getIp(), _splitMsg[1]));
+	std::string msg = "";
+	if (_splitMsg.size() == 2)
+		msg = _splitMsg[1];
+	sendAll(mList, RPL_QUIT(client.getNick(), client.getNick(), client.getIp(), msg));
 	cList.erase(checkValidClient(client.getNick(), cList) + cList.begin());
 	return (1);
 } 

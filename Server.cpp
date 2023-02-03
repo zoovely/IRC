@@ -72,6 +72,7 @@ int	Server::readClient(int fd)
 {
 	// if문 main으로 옮김
 	// readClient를 accept에서 호출
+	std::memset(_readBuf, 0, BUF);
 	int r = read(fd, _readBuf, BUF);
 	if (r <= 0)
 	{
@@ -85,7 +86,6 @@ int	Server::readClient(int fd)
 	std::cout << "buf : " << fd << "+" << _readBuf << "\n"; // 나중에 지우기
 	executeCommand(fd);
 	_poll[fd].revents = 0;
-	std::memset(_readBuf, 0, BUF);
 	return (1);
 }
 
@@ -105,6 +105,9 @@ void	Server::executeCommand(int fd) {
 	{
 		case CONNECT:
 			com.connect(fd, _pwd, _clients);
+			break;
+		case PASS:
+			com.pass(_clients[cIdx], _pwd, _clients, cIdx);
 			break;
 		case JOIN:
 			com.join(_clients[cIdx], _channels);

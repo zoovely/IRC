@@ -7,7 +7,7 @@ Channel::Channel(const Client& client, std::string name)
 {
     _users.insert(std::make_pair<const Client&, int>(client, OPER));
     std::cerr << "channel creation: [" << _users.begin()->first.getNick() << "] [" << _users.begin()->second << "]\n";
-
+    std::cerr << name << std::endl;
     return ;
     // 초기화 리스트로 map을 초기화해줘야함(client &라서) 괜찮은가? 무슨말이지?
     // makepair로 insert 를하면 makepair 가 레퍼런스로 안받아서 데이터가 사라지는듯? 확실치않음 근데안됨 이렇게하면 됨;
