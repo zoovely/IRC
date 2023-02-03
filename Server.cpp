@@ -119,7 +119,7 @@ void	Server::executeCommand(int fd) {
 			com.kick(_clients[cIdx], _channels);
 			break;
 		case NICK:
-			com.nick(_clients[cIdx], _clients);
+			com.nick(_clients[cIdx], _clients, _channels);
 			break;
 		case LIST:
 			com.list(_clients[cIdx], _channels);
@@ -153,6 +153,9 @@ void	Server::executeCommand(int fd) {
 			break;
 		case MODE_I:
 			com.modeI(_clients[cIdx]);
+			break;
+		case MODE_N:
+			com.modeN(_clients[cIdx], _channels);
 			break;
 		default:
 			break;
