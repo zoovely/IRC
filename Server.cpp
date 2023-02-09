@@ -63,6 +63,8 @@ int	Server::readClient(int fd)
 		setPollFd(fd, -1, 0, 0);
 		return (-1);
 	}
+	std::cout << "fd : " << fd << "\n";
+	std::cout << "readBuf : " << _readBuf << "\n";
 	executeCommand(fd);
 	_poll[fd].revents = 0;
 	return (1);
@@ -80,6 +82,19 @@ void	Server::executeCommand(int fd) {
 	Command	com(_readBuf);
 	int	type = com.checkMsgType();
 	int	cIdx = getClientByFd(fd);
+	std::cout << " ===== clients list ===== \n";
+	for (size_t i = 0; i < _clients.size(); i++)
+	{
+		std::cout << _clients[i].getNick() << "\n";
+		std::cout << &_clients[i] << "\n";
+	}
+	std::cout << "====== channel list ====== \n";
+	for (size_t i = 0; i < _channels.size(); i++)
+	{
+		std::cout << _channels[i].getName() << "\n";
+		std::cout << _channels[i].getUsersNames() << "\n";
+		std::cout << &_channels[i] << "\n";
+	}
 	switch (type)
 	{
 		case CONNECT:

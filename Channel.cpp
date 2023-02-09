@@ -97,6 +97,9 @@ std::string Channel::getUsersNames(void) {
     std::string msg;
     _it = _users.begin();
     for (_it = _users.begin(); _it != _users.end(); _it++) {
+        std::cout << "getUserNames : nick " << _it->first.getNick() << "\n";
+        std::cout << "getUserNames : mode " << _it->second << "\n";
+        std::cout << "getUserNames : addr " << &_it->first << "\n";
         if(_it->second == OPER)
             msg += "@";
         msg += _it->first.getNick();

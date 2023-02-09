@@ -14,19 +14,21 @@
 
 class Channel {
     private:
-        std::map<const Client&, int> _users;
-        std::map<const Client&, int>::iterator _it;
-        std::map<const Client&, int>::const_iterator _coit;
+        // std::map<const Client&, int> _users;
+        std::vector<Client&> _userClients;
+        std::vector<int> _userMods;
+        // std::map<const Client&, int>::iterator _it;
+        // std::map<const Client&, int>::const_iterator _coit;
         std::string _name;
 
     public:
         Channel(const Client& client, std::string name);
         std::vector<int> getFds(int senderFd) const;
         const std::string getName(void) const;
-        bool checkAuth(const Client& client) const;
+        bool checkAuth(Client& client) const;
         bool checkClient(std::string nick);
-        void addUser(const Client& client);
-        void delUser(const Client& client);
+        void addUser(Client& client);
+        void delUser(Client& client);
         void delByNick(std::string nick);
         void opUser(std::string nick);
         void deopUser(std::string nick);
