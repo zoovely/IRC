@@ -30,11 +30,9 @@ class Server {
         
     public :
         Server(int portNum, std::string pwd);
-        ~Server( void ){};
         int checkChannel(std::string channel);
         int acceptClient( void );
         int readClient(int fd);
-        bool checkNick(std::string nick); // 클라이언트 추가할 때 닉네임 중복 확인용 <- 중복이면 닉네임에 뭐 달아주고 경고문 뱉어줘야 함
         void errorHandler(std::string msg);
         void executeCommand(int fd);
 
@@ -43,4 +41,5 @@ class Server {
         void setPollFd(int index, int fd, int events, int revents);
         int getClientByFd(int fd);
 };
+
 #endif

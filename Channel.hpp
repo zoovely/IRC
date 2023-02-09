@@ -14,14 +14,13 @@
 
 class Channel {
     private:
-        std::map<const Client&, int> _users; // uesr와, 해당 채널에서의 권한
+        std::map<const Client&, int> _users;
         std::map<const Client&, int>::iterator _it;
         std::map<const Client&, int>::const_iterator _coit;
         std::string _name;
 
     public:
         Channel(const Client& client, std::string name);
-        ~Channel(void) {}; // 이거 없애던지 나중에 소멸자 구현하던지
         std::vector<int> getFds(int senderFd) const;
         const std::string getName(void) const;
         bool checkAuth(const Client& client) const;

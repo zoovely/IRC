@@ -9,7 +9,7 @@
 #define A_NICK 2
 #define A_USER 3
 
-class Client{
+class Client {
     private:
         std::string _nick;
         std::string _user;
@@ -19,7 +19,6 @@ class Client{
 
     public:
         Client(std::string nick, std::string user, std::string ip, int fd, int flag);
-        ~Client( void ){};
 
         void    setNick(std::string nick);
         const std::string getNick() const;

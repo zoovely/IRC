@@ -67,7 +67,7 @@
 # define ERR_ERRONEUSNICKNAME(nick)					    ":LAZYIRC 432 " + nick + " :" + nick + " is Erroneus nickname\r\n"
 # define ERR_NICKNAMEINUSE(nick)					    ":LAZYIRC 433 " + nick + " :" + nick + "\r\n"
 # define ERR_NICKCOLLISION(nick)					    ":LAZYIRC 436 " + nick + " :Nickname collision KILL\r\n"
-# define ERR_USERNOTINCHANNEL(nick, channel)            ":LAZYIRC 441 " + nick + " " + channel + " :They aren't on that channel\r\n"
+# define ERR_USERNOTINCHANNEL(nick, target, channel)    ":LAZYIRC 441 " + nick + " " + target + " " + channel + " :They aren't on that channel\r\n"
 # define ERR_NOTONCHANNEL(nick, channel)			    ":LAZYIRC 442 " + nick + " " + channel + " :You're not on that channel\r\n"
 # define ERR_NOTREGISTERED							    ":LAZYIRC 451 * :You have not registered\r\n"
 
@@ -83,31 +83,5 @@
 # define ERR_UMODEUNKNOWNFLAG(nick, channel)		    ":LAZYIRC 501 " + nick + " " + channel + " :Unknown MODE flag\r\n"
 # define ERR_USERSDONTMATCH(nick)					    ":LAZYIRC 502 " + nick + " :Cant change mode for other users\r\n"
 # define ERR_FLOOD(sec)								    ":LAZYIRC 504 * :flood detected, please wait " + sec + " seconds\r\n"
-
-// # define ERR_FAILTOOPENFILE(nick, path)				    ":LAZYIRC 505 " + nick + " :Fail to open file" + path + "\r\n"
-// # define ERR_NOSUCHFILE(nick, path)					    ":LAZYIRC 506 " + nick + " :No such file" + path + "\r\n"
-
-// # define RPL_UMODEIS(nick, mode)					":LAZYIRC 221 " + nick + " " + mode + "\r\n"
-// # define RPL_NONE(message)						":LAZYIRC 300 * :" + message + "\r\n"
-// # define RPL_AWAY(nick, message)					":LAZYIRC 301 * " + nick + " :" + message + "\r\n"
-// # define RPL_UNAWAY(nick)						":LAZYIRC 305 * " + nick + " :You are no longer marked as being away\r\n"
-// # define RPL_NOWAWAY(nick)						":LAZYIRC 306 * " + nick + " :You have been marked as being away\r\n"
-
-// # define RPL_MOTD(nick, comment) 				":LAZYIRC 372 " + nick + " :- " + comment + "\r\n"
-// # define RPL_MOTDSTART(nick)						":LAZYIRC 375 " + nick + " :- IRC Message of the day - \r\n"
-// # define RPL_ENDOFMOTD(nick)						":LAZYIRC 376 " + nick + " :End of MOTD command\r\n"
-// # define RPL_YOUREOPER(nick)						":LAZYIRC 381 " + nick + " :You are now an IRC operator\r\n"
-
-// # define RPL_DCCSEND(nick, file)					":LAZYIRC 346 " + nick + " " + file + " :DDC request sent from " + nick + "\r\n"
-// # define RPL_DCCRECV(nick, file)					":LAZYIRC 347 " + nick + " " + file + " :DDC request received from " + nick + "\r\n"
-// # define RPL_DCCSENT(nick, file)					":LAZYIRC 348 " + nick + " " + file + " :DDC request sent to " + nick + "\r\n"
-// # define RPL_DCCRECVD(nick, file)				":LAZYIRC 349 " + nick + " " + file + " :DDC sent " + file + " for " + nick + "\r\n"
-
-// # define RPL_CHANNELMODEIS(nick, channel)	        ":LAZYIRC 324 " + nick + " " + channel + " :+nt\r\n"
-// # define RPL_CREATIONTIME(nick, channel, timestamp)	":LAZYIRC 329 " + nick + " " + channel + " :" + timestamp + "\r\n" 
-// # define RPL_ENDOFBANLIST(nick, channel)			    ":LAZYIRC 368 " + nick + " " + channel + " :End of channel ban list\r\n"
-
-// # define FORM_1(nick, user, cmd, channel)		":" + nick + "!" + user + "@" + ip + cmd + " :" + channel + "\r\n"
-// # define FORM_2(nick, user, msg)					":" + nick + "!" + user + "@" + ip + msg + "\r\n"
 
 #endif

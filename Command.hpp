@@ -38,10 +38,7 @@ class Command {
     public:
         Command(std::string msg);
         void splitMsg(void);
-
-        // define에대해서 확인 & 디파인값 확인 (없는거는 0 반환)
         int checkMsgType(void);
-        // client fd로 메세지를 출력  // 파라미터 바뀌어야될듯
         void sendFd(int fd, std::string str);
         void sendAll(std::vector<int> fds, std::string str);
         int checkValidChannel(const std::string chName, const std::vector<Channel> &chList);
@@ -52,18 +49,18 @@ class Command {
         std::string getUsers(const Channel &channel);
 
         //command list 
-        int connect(int fd, std::string pwd, std::vector<Client> &cList); // 비번인증, 닉네임 중복검사 내부에서 필요& & welcome msg전송
+        int connect(int fd, std::string pwd, std::vector<Client> &cList);
         int pass(Client &client, std::string pwd, std::vector<Client> &cList, int idx);
         int join(const Client &client, std::vector<Channel> &chList);
-        int part(const Client &client, std::vector<Channel> &chList); // channel에 남은 사람이 있는지 확인
+        int part(const Client &client, std::vector<Channel> &chList);
         int invite(const Client &client, const std::vector<Channel> &chList, const std::vector<Client> &cList);
-        int kick(const Client &client, std::vector<Channel> &chList); // channel에 남은 사람이 있는지 확인 
+        int kick(const Client &client, std::vector<Channel> &chList);
         int nick(Client &client, std::vector<Client> &cList, const std::vector<Channel> &chList);
         int chkNick(std::string nickName, std::vector<Client> &cList, int fd);
         int user(Client &client, std::vector<Client> &cList);
         int list(const Client &client, const std::vector<Channel> &chList);
         int whois(const Client &client, const std::vector<Client> &cList);
-        int quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList); // channel에 남은 사람이 있는지 확인 
+        int quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList);
         int ping(const Client &client);
         int op(const Client &client, std::vector<Channel> &chList);
         int deop(const Client &client, std::vector<Channel> &chList);
