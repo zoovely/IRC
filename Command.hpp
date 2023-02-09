@@ -16,18 +16,19 @@
 #define INVITE  5
 #define KICK    6
 #define NICK    7
-#define LIST    8
-#define WHOIS   9
-#define QUIT    10
-#define PING    11
-#define OP      12
-#define DEOP    13
-#define PRIVMSG 14
-#define PRIVCH  15
-#define NOTICE  16
-#define NOTICH  17
-#define MODE_I  18
-#define MODE_N  19
+#define USER    8
+#define LIST    9
+#define WHOIS   10
+#define QUIT    11
+#define PING    12
+#define OP      13
+#define DEOP    14
+#define PRIVMSG 15
+#define PRIVCH  16
+#define NOTICE  17
+#define NOTICH  18
+#define MODE_I  19
+#define MODE_N  20
 
 class Command {
     private:
@@ -58,6 +59,8 @@ class Command {
         int invite(const Client &client, const std::vector<Channel> &chList, const std::vector<Client> &cList);
         int kick(const Client &client, std::vector<Channel> &chList); // channel에 남은 사람이 있는지 확인 
         int nick(Client &client, std::vector<Client> &cList, const std::vector<Channel> &chList);
+        int chkNick(std::string nickName, std::vector<Client> &cList, int fd);
+        int user(Client &client, std::vector<Client> &cList);
         int list(const Client &client, const std::vector<Channel> &chList);
         int whois(const Client &client, const std::vector<Client> &cList);
         int quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList); // channel에 남은 사람이 있는지 확인 

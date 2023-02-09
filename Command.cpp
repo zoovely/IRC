@@ -11,6 +11,7 @@ void Command::splitMsg(void) {
 	std::string::size_type pos = _msg.find(" " , 0);
 	std::string::size_type newpos = _msg.find("\r\n", 0);
 	std::string::size_type colone = _msg.find(":", 0);
+
 	int i = 0;
 	while ((pos != std::string::npos || newpos != std::string::npos) && pos < colone)
 	{
@@ -30,13 +31,12 @@ void Command::splitMsg(void) {
 		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone -2));
 	else
 		_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2));
-	// _splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2)); // -2 is added to prevent adding "/r/n" in last msg;
-  // lst msg follwing ":" should include all characters including space;
 	return ;
 }
 
 int	Command::checkMsgType(void) {
-	std::string typeList[] = {"CAP", "PASS", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
+	std::string typeList[] = {"CAP", "PASS", "JOIN", "PART", "INVITE", "KICK", "NICK", "USER", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
+	
 	for (size_t i = 0; i < sizeof(typeList)/sizeof(std::string); i++) {
 		if (_splitMsg[0].find(typeList[i]) != std::string::npos) {
 			switch (i)
@@ -104,7 +104,7 @@ int Command::checkValidClient(const std::string nick, const std::vector<Client> 
 }
 
 int	Command::checkValidNick(const std::string nick) {
-	std::string	cmdList[] = {"CAP", "JOIN", "PART", "INVITE", "KICK", "NICK", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
+	std::string	cmdList[] = {"CAP", "PASS", "JOIN", "PART", "INVITE", "KICK", "NICK", "USER", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
 	for (size_t i = 0; i < cmdList->size(); i++) { //cmdlist와 같은지 확인
 		if (nick == cmdList[i])
 			return (-1);
@@ -126,20 +126,20 @@ int Command::getClientByFd(int fd, std::vector<Client> cList) {
 
 //command list 
 int Command::connect(int fd, std::string pwd, std::vector<Client> &cList) {	
-	Client nClient("", "", "", fd, true);
+	Client nClient("", "", "", fd, A_CONNECT);
 	cList.push_back(nClient);
 	if (_splitMsg.size() != 2 && _splitMsg[2] == "PASS") { // 
 		pass(cList.back(), pwd, cList, cList.size() - 1);
 	}
+	
 	return (1);
 }
 
 int Command::pass(Client &client, std::string pwd, std::vector<Client> &cList, int idx) {
 	size_t i;
-	std::string nick = "";
-	std::string	ip = "";
-	if (client.getFlag() == false)
-		return (1);
+
+	//if (client.getFlag() != A_CONNECT)
+	//	return (-1); // cap ls
 	for (i = 0; i < _splitMsg.size(); i++) {
 		if (_splitMsg[i].compare("PASS") == 0)
 			break;
@@ -149,40 +149,16 @@ int Command::pass(Client &client, std::string pwd, std::vector<Client> &cList, i
 		cList.erase(idx + cList.begin());
 		return (-1);
 	}
+	//nick 호출
+	client.setFlag(A_PASS);
 	for (i = 0; i < _splitMsg.size(); i++) {
 		if (_splitMsg[i].compare("NICK") == 0)
+		{
+			std::vector<Channel> chList;
+			nick(client, cList, chList);
 			break;
+		}
 	}
-	if (i == _splitMsg.size()) //nick 없음
-	{
-		sendFd(client.getFd(), ERR_NONICKNAMEGIVEN);
-		cList.erase(idx + cList.begin());
-		return (-1);
-	}
-	nick = _splitMsg[i + 1];
-	if (checkValidNick(nick) == -1) //nick 규칙 안맞음
-	{
-		sendFd(client.getFd(), ERR_ERRONEUSNICKNAME(nick));
-		cList.erase(idx + cList.begin());
-		return (-1);
-	}
-	if (checkValidClient(nick, cList) != -1) //이미 존재하는 이름
-		sendFd(client.getFd(), ERR_NICKNAMEINUSE(nick));
-	for (i = 0; i < _splitMsg.size(); i++) {
-		if (_splitMsg[i].compare("USER") == 0)
-			break;
-	}
-	if (i == _splitMsg.size()) {
-		// err msg type? user keyword가 안들어 왔을 경우?
-		cList.erase(idx + cList.begin());
-		return (-1);
-	}
-	ip = _splitMsg[i + 3];
-	// welcome msg 001, 002 전송
-	
-	client.setInfo(nick, _splitMsg[i + 4].erase(0, 1), ip, false);
-	sendFd(client.getFd(), RPL_WELCOME(nick));
-	sendFd(client.getFd(), RPL_YOURHOST(nick));
 	return (1);
 }
 
@@ -361,7 +337,7 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 	if (channel.checkClient(nick) == false)
 	{
 		msg = ERR_USERNOTINCHANNEL(nick, chName);
-		sendFd(cFd, msg);	
+		sendFd(cFd, msg);
 		return (-1); // deop할 유저가  channel에 속해있지 않을 경우
 	}
 	else
@@ -377,38 +353,43 @@ int Command::deop(const Client &client, std::vector<Channel> &chList) {
 
 // nick change nick
 int Command::nick(Client &client, std::vector<Client> &cList, const std::vector<Channel> &chList) {
-	std::string nickName = _splitMsg[1];
+	std::vector<int>	mList;
+	std::vector<int>	temp;
+	std::vector<const Channel>::const_iterator it;
+	std::string 		msg;
+	std::string 		nickName;
 	int cFd = client.getFd();
-	std::string msg;
 
-	if (client.getFlag()) {
+	if (client.getFlag() < A_PASS) {
 		sendFd(cFd, ERR_PASSWDMISMATCH);
 		cList.erase(getClientByFd(cFd, cList) + cList.begin());
 		return (-1);
-	} 
-	if (nickName.empty() == true)
-	{
-		sendFd(cFd, ERR_NONICKNAMEGIVEN);
-		return (-1); // 닉네임이 비어있을 경우
 	}
-	if (checkValidClient(nickName, cList) != -1)
+	if (client.getFlag() == A_PASS)
 	{
-		msg = ERR_NICKNAMEINUSE(nickName);
-		sendFd(cFd, msg);
-		return (-1); // 중복된 닉네임이 있을 경우
+		size_t i;
+		for (i = 0; i < _splitMsg.size(); i++) {
+			if (_splitMsg[i].compare("NICK") == 0) {
+				nickName = _splitMsg[i + 1];
+				break;
+			}
+		}
+		if (chkNick(nickName, cList, cFd) == -1)
+		{
+			if (checkValidNick(nickName) == -1)
+				return (-1);
+			cList.erase(getClientByFd(cFd, cList) + cList.begin());
+			return (-1);
+		}
+		client.setNick(nickName);
+		client.setFlag(A_NICK);
+		if (_splitMsg.size() > i + 2 && _splitMsg[i + 2].compare("USER") == 0)
+			user(client, cList);
 	}
-	if (checkValidNick(nickName) == -1)
-	{	
-		msg = ERR_ERRONEUSNICKNAME(nickName);
-		sendFd(cFd, msg);
-		return (-1); // 유효하지 않은 nickname이 들어올 경우
-	}
-	else 
-	{
-		std::vector<int>	mList;
-		std::vector<int>	temp;
-        std::vector<const Channel>::const_iterator it;
-
+	else {
+ 		nickName = _splitMsg[1];
+		if (chkNick(nickName, cList, cFd) == -1)
+			return (-1);
 		for (it = chList.begin(); it < chList.end(); it++) {
 			temp = it->getFds(client.getFd());
 			mList.insert(mList.end(), temp.begin(), temp.end()); // 본인 빼고 채널 사람들 넣기
@@ -421,6 +402,51 @@ int Command::nick(Client &client, std::vector<Client> &cList, const std::vector<
 		client.setNick(nickName);
 	}
 	return (1); // 중복되지 않음
+}
+
+int Command::chkNick(std::string nickName, std::vector<Client> &cList, int cFd) {
+	if (nickName.empty() == true)
+	{
+		sendFd(cFd, ERR_NONICKNAMEGIVEN);
+		return (-1); // 닉네임이 비어있을 경우
+	}
+	if (checkValidClient(nickName, cList) != -1)
+	{
+		sendFd(cFd, ERR_NICKNAMEINUSE(nickName));
+		return (-1); // 중복된 닉네임이 있을 경우
+	}
+	if (checkValidNick(nickName) == -1)
+	{	
+		sendFd(cFd, ERR_ERRONEUSNICKNAME(nickName));
+		return (-1); // 유효하지 않은 nickname이 들어올 경우
+	}
+	return (1);
+}
+
+int Command::user(Client &client, std::vector<Client> &cList) {
+	size_t i;
+
+	if (client.getFlag() != A_NICK) {
+		cList.erase(getClientByFd(client.getFd(), cList) + cList.begin());
+		return (-1);
+	}
+	for (i = 0; i < _splitMsg.size(); i++) {
+		if (_splitMsg[i].compare("USER") == 0)
+			break;
+	}
+	if (i == _splitMsg.size()) {
+		cList.erase(getClientByFd(client.getFd(), cList) + cList.begin());
+		// err msg type? user keyword가 안들어 왔을 경우?
+		return (-1);
+	}
+	client.setUser(_splitMsg[i + 4].erase(0, 1));
+	client.setIp(_splitMsg[i + 3]);
+	client.setFlag(A_USER);
+
+	// welcome msg 001, 002 전송
+	sendFd(client.getFd(), RPL_WELCOME(client.getNick()));
+	sendFd(client.getFd(), RPL_YOURHOST(client.getNick()));
+	return (1);
 }
 
 // list

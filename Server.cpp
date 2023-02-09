@@ -73,7 +73,7 @@ int	Server::readClient(int fd)
 	// if문 main으로 옮김
 	// readClient를 accept에서 호출
 	std::memset(_readBuf, 0, BUF);
-	int r = read(fd, _readBuf, BUF);
+	int r = recv(fd, _readBuf, BUF, MSG_DONTWAIT);
 	if (r <= 0)
 	{
 		//client한테 read 실패 send 해주고
@@ -123,6 +123,9 @@ void	Server::executeCommand(int fd) {
 			break;
 		case NICK:
 			com.nick(_clients[cIdx], _clients, _channels);
+			break;
+		case USER:
+			com.user(_clients[cIdx], _clients);
 			break;
 		case LIST:
 			com.list(_clients[cIdx], _channels);

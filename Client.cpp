@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(std::string nick, std::string user, std::string ip, int fd, bool flag)
+Client::Client(std::string nick, std::string user, std::string ip, int fd, int flag)
 : _nick(nick), _user(user), _ip(ip), _clientFd(fd), _flag(flag)
 {}
 
@@ -24,15 +24,23 @@ const std::string Client::getIp() const {
 	return (_ip);
 }
 
-bool Client::getFlag() const {
+int Client::getFlag() const {
 	return (_flag);
 }
 
-void Client::setFlag(bool flag) {
+void Client::setFlag(int flag) {
 	_flag = flag;
 }
 
-void Client::setInfo(std::string nick, std::string user, std::string ip, bool flag) {
+void Client::setIp(std::string ip) {
+	_ip = ip;
+}
+
+void Client::setUser(std::string user) {
+	_user = user;
+}
+
+void Client::setInfo(std::string nick, std::string user, std::string ip, int flag) {
 	_nick = nick;
 	_user = user;
 	_ip = ip;
