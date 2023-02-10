@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <sys/socket.h>
+#include <list>
 #include <ctype.h>
 
 #include "Client.hpp"
@@ -34,6 +35,10 @@ class Command {
     private:
         std::string _msg;
         std::vector<std::string> _splitMsg;
+        std::list<Channel>::iterator _chit;
+        std::list<Channel>::const_iterator _coChit;
+        std::list<Client>::iterator _cit;
+        std::list<Client>::const_iterator _coCit;
         
     public:
         Command(std::string msg);
@@ -41,35 +46,37 @@ class Command {
         int checkMsgType(void);
         void sendFd(int fd, std::string str);
         void sendAll(std::vector<int> fds, std::string str);
-        int checkValidChannel(const std::string chName, const std::vector<Channel> &chList);
-        int checkValidClient(const std::string nick, const std::vector<Client> &cList);
+        std::list<Channel>::const_iterator checkValidChannel(const std::string chName, const std::list<Channel> &chList);
+        std::list<Client>::const_iterator checkValidClient(const std::string nick, const std::list<Client> &cList);
         int	checkValidNick(const std::string nick);
-        int getClientByFd(int fd, std::vector<Client> cList);
-        void delChannel(std::vector <Channel> &chList, Channel &channel);
+      
+        std::list<Client>::iterator getClientByFd(int fd, std::list<Client> cList);
+        void delChannel(std::list<Channel> &chList, std::string name);
         std::string getUsers(const Channel &channel);
+        void welcomeMsg(Client &client);
 
         //command list 
-        int connect(int fd, std::string pwd, std::vector<Client> &cList);
-        int pass(Client &client, std::string pwd, std::vector<Client> &cList, int idx);
-        int join(const Client &client, std::vector<Channel> &chList);
-        int part(const Client &client, std::vector<Channel> &chList);
-        int invite(const Client &client, const std::vector<Channel> &chList, const std::vector<Client> &cList);
-        int kick(const Client &client, std::vector<Channel> &chList);
-        int nick(Client &client, std::vector<Client> &cList, const std::vector<Channel> &chList);
-        int chkNick(std::string nickName, std::vector<Client> &cList, int fd);
-        int user(Client &client, std::vector<Client> &cList);
-        int list(const Client &client, const std::vector<Channel> &chList);
-        int whois(const Client &client, const std::vector<Client> &cList);
-        int quit(Client &client, std::vector<Channel> &chList, std::vector<Client> &cList);
+        int connect(int fd, std::string pwd, std::list<Client> &cList);
+        int pass(Client &client, std::string pwd, std::list<Client> &cList, std::list<Client>::iterator cIt);
+        int join(const Client &client, std::list<Channel> &chList);
+        int part(const Client &client, std::list<Channel> &chList);
+        int invite(const Client &client, const std::list<Channel> &chList, const std::list<Client> &cList);
+        int kick(const Client &client, std::list<Channel> &chList);
+        int nick(Client &client, std::list<Client> &cList, const std::list<Channel> &chList);
+        int chkNick(std::string nickName, std::list<Client> &cList, int fd);
+        int user(Client &client, std::list<Client> &cList);
+        int list(const Client &client, const std::list<Channel> &chList);
+        int whois(const Client &client, const std::list<Client> &cList);
+        int quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, std::list<Client> &cList);
         int ping(const Client &client);
-        int op(const Client &client, std::vector<Channel> &chList);
-        int deop(const Client &client, std::vector<Channel> &chList);
-        int privmsg(const Client &sender, const std::vector<Channel> &chList);
-        int privmsg(const Client &sender, const std::vector<Client> &cList);
-        int notice(const Client &sender, const std::vector<Channel> &chList);
-        int notice(const Client &sender, const std::vector<Client> &cList);
+        int op(const Client &client, std::list<Channel> &chList);
+        int deop(const Client &client, std::list<Channel> &chList);
+        int privmsg(const Client &sender, const std::list<Channel> &chList);
+        int privmsg(const Client &sender, const std::list<Client> &cList);
+        int notice(const Client &sender, const std::list<Channel> &chList);
+        int notice(const Client &sender, const std::list<Client> &cList);
         int modeI(const Client &sender);
-        int modeN(const Client &sender, const std::vector<Channel> &chList);
+        int modeN(const Client &sender, const std::list<Channel> &chList);
 };
 
 #endif

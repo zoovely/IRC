@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <vector>
+#include <list>
 #include <poll.h>
 #include <cstring>
 
@@ -24,13 +24,15 @@ class Server {
         struct sockaddr_in   _serverSin;
         struct pollfd        _poll[OPEN_MAX];
         std::string          _pwd;
-        std::vector<Client>  _clients;
-        std::vector<Channel> _channels;
+        std::list<Client>    _clients;
+        std::list<Channel>   _channels;
+        std::list<Client>::iterator     _cit;
+        std::list<Channel>::iterator    _chit;
         char                 _readBuf[BUF];
         
     public :
         Server(int portNum, std::string pwd);
-        int checkChannel(std::string channel);
+        std::list<Channel>::iterator checkChannel(std::string channel);
         int acceptClient( void );
         int readClient(int fd);
         void errorHandler(std::string msg);
@@ -39,7 +41,7 @@ class Server {
         struct pollfd* getPoll( void );
         int getServerFd( void );
         void setPollFd(int index, int fd, int events, int revents);
-        int getClientByFd(int fd);
+        std::list<Client>::iterator getClientByFd(int fd);
 };
 
 #endif

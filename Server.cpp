@@ -42,14 +42,14 @@ int Server::acceptClient( void )
 	return (1);
 }
 
-int Server::checkChannel(std::string channel)
+std::list<Channel>::iterator Server::checkChannel(std::string chName)
 {
-    for (size_t i = 0; i != _channels.size(); i++)
-    {
-        if (_channels[i].getName() == channel)
-            return (i);
-    }
-    return (-1);
+	for (_chit = _channels.begin(); _chit != _channels.end(); _chit++)
+	{
+		if (_chit->getName() == chName)
+			break ;
+	}
+	return (_chit);
 }
 
 int	Server::readClient(int fd) 
@@ -70,92 +70,96 @@ int	Server::readClient(int fd)
 	return (1);
 }
 
-int Server::getClientByFd(int fd) {
-	for(size_t i = 0; i < _clients.size(); i++) {
-		if (_clients[i].getFd() == fd)
-			return (i);
+std::list<Client>::iterator Server::getClientByFd(int fd) {\
+	for (_cit = _clients.begin(); _cit != _clients.end(); _cit++)
+	{
+		if (_cit->getFd() == fd)
+			break;
 	}
-	return (-1);
+	return (_cit);
 }
 
 void	Server::executeCommand(int fd) {
 	Command	com(_readBuf);
 	int	type = com.checkMsgType();
-	int	cIdx = getClientByFd(fd);
+	
+	std::list<Client>::iterator cIt;
 	std::cout << " ===== clients list ===== \n";
-	for (size_t i = 0; i < _clients.size(); i++)
+	for (cIt = _clients.begin(); cIt != _clients.end(); cIt++)
 	{
-		std::cout << _clients[i].getNick() << "\n";
-		std::cout << &_clients[i] << "\n";
+		std::cout << cIt->getNick() << "\n";
+		std::cout << &(*cIt) << "\n";
 	}
 	std::cout << "====== channel list ====== \n";
-	for (size_t i = 0; i < _channels.size(); i++)
+	for (_chit = _channels.begin(); _chit != _channels.end(); _chit++)
 	{
-		std::cout << _channels[i].getName() << "\n";
-		std::cout << _channels[i].getUsersNames() << "\n";
-		std::cout << &_channels[i] << "\n";
+		std::cout << _chit->getName() << "\n";
+		std::cout << _chit->getUsersNames() << "\n";
+		std::cout << &(*_chit)<< "\n";
 	}
+
+	_cit = getClientByFd(fd);
 	switch (type)
 	{
 		case CONNECT:
 			com.connect(fd, _pwd, _clients);
 			break;
 		case PASS:
-			com.pass(_clients[cIdx], _pwd, _clients, cIdx);
+			com.pass((*_cit), _pwd, _clients, _cit);
 			break;
 		case JOIN:
-			com.join(_clients[cIdx], _channels);
+			com.join((*_cit), _channels);
 			break;
 		case PART:
-			com.part(_clients[cIdx], _channels);
+			com.part((*_cit), _channels);
 			break;
 		case INVITE:
-			com.invite(_clients[cIdx], _channels, _clients);
+			com.invite((*_cit), _channels, _clients);
 			break;
 		case KICK:
-			com.kick(_clients[cIdx], _channels);
+			com.kick((*_cit), _channels);
 			break;
 		case NICK:
-			com.nick(_clients[cIdx], _clients, _channels);
+			com.nick((*_cit), _clients, _channels);
 			break;
 		case USER:
-			com.user(_clients[cIdx], _clients);
+			com.user((*_cit), _clients);
 			break;
 		case LIST:
-			com.list(_clients[cIdx], _channels);
+			com.list((*_cit), _channels);
 			break;
 		case WHOIS:
-			com.whois(_clients[cIdx], _clients);
+			com.whois((*_cit), _clients);
 			break;
 		case QUIT:
-			com.quit(_clients[cIdx], _channels, _clients);
+			com.quit(_cit, _channels, _clients);
 			break;
 		case PING:
-			com.ping(_clients[cIdx]);
+			com.ping((*_cit));
 			break;
 		case OP:
-			com.op(_clients[cIdx], _channels);
+			com.op((*_cit), _channels);
 			break;
 		case DEOP:
-			com.deop(_clients[cIdx], _channels);
+			com.deop((*_cit), _channels);
 			break;
 		case PRIVMSG:
-			com.privmsg(_clients[cIdx], _clients);
+			com.privmsg((*_cit), _clients);
 			break;
 		case PRIVCH:
-			com.privmsg(_clients[cIdx], _channels);
+			com.privmsg((*_cit), _channels);
 			break;
 		case NOTICE:
-			com.notice(_clients[cIdx], _clients);
+			com.notice((*_cit), _clients);
 			break;
 		case NOTICH:
-			com.notice(_clients[cIdx], _channels);
+			com.notice((*_cit), _channels);
 			break;
 		case MODE_I:
-			com.modeI(_clients[cIdx]);
+			com.modeI((*_cit));
 			break;
 		case MODE_N:
-			com.modeN(_clients[cIdx], _channels);
+			com.modeN((*_cit), _channels);
 			break;
 		default:
 			break;

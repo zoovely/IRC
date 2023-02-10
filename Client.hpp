@@ -7,7 +7,8 @@
 #define A_CONNECT 0
 #define A_PASS 1
 #define A_NICK 2
-#define A_USER 3
+#define DONE   3
+#define DUPDUP 4
 
 class Client {
     private:
