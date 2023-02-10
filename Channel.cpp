@@ -32,8 +32,15 @@ bool Channel::checkClient(std::string nick) {
     return (false);
 }
 
+// return int값으로 주고 
+//command join 할 때 여기값으로 send하기
 void Channel::addUser(const Client& client)
 {
+    if (_users.size() == SIZE)
+    {
+        // sendFd(client.getFd(), ERR_CHANNELISFULL(client.getNick(), _name));
+        return ;
+    }
     _users.insert(std::make_pair<const Client&, int>(client, NORMAL));
     return ;
 }
@@ -43,15 +50,15 @@ void Channel::delUser(const Client &client) {
     return ;
 }
 
-void Channel::delByNick(std::string nick) {
+int Channel::delByNick(std::string nick) {
     for (_it = _users.begin(); _it != _users.end(); _it++)
     {
         if (_it->first.getNick() == nick) {
             delUser(_it->first);
-            break;
+            return (1);
         }
     }
-    return ;
+    return (0);
 }
 
 int Channel::getUserSize( void ) const {

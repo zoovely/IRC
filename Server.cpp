@@ -3,6 +3,8 @@
 
 Server::Server(int portNum, std::string pwd)
 {
+	//buf를 저장하는 구조체 만들고
+
     _pwd = pwd;
     _serverFd = socket(PF_INET, SOCK_STREAM, 0);
     if (_serverFd == -1) 
@@ -54,6 +56,7 @@ std::list<Channel>::iterator Server::checkChannel(std::string chName)
 
 int	Server::readClient(int fd) 
 {
+	
 	std::memset(_readBuf, 0, BUF);
 	int r = recv(fd, _readBuf, BUF, MSG_DONTWAIT);
 	if (r <= 0)
@@ -63,6 +66,12 @@ int	Server::readClient(int fd)
 		setPollFd(fd, -1, 0, 0);
 		return (-1);
 	}
+	//해당 fd에 대해서 구조체에서 찾아서 뒤에 붙여주고
+	//그 버프에 들어온거로 command array만들어서 각 command에 대해서 executecommand실행하고 -> 함수로 빼고
+	// 그러면 처음에 한번에 들어올거라고 생각 안하고 
+	//그냥 cap ls, pass, nick, user를 다 따로 실행한다고 생각하고 다시 작성해야하고 = ??? \r\n 매행?
+	// \r\n없이 끝났으면 그거 버프에 계속 저장하고 있고
+	// fd에 대해서 연결 끝나면 (close 되면)버프도 날려주고
 	std::cout << "fd : " << fd << "\n";
 	std::cout << "readBuf : " << _readBuf << "\n";
 	executeCommand(fd);

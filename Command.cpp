@@ -496,11 +496,11 @@ int Command::quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, s
 	std::vector<int>	temp;
 	
 	for (_chit = chList.begin(); _chit != chList.end(); _chit++) {
-		_chit->delByNick(cIt->getNick());
-		temp = _chit->getFds(cIt->getFd());
+		if (_chit->delByNick(cIt->getNick()) == 1)
+			temp = _chit->getFds(cIt->getFd());
 		mList.insert(mList.end(), temp.begin(), temp.end());
 		if (_chit->getUserSize() == 0)
-			chList.erase(_chit);
+			_chit = chList.erase(_chit);
 	}
 	sort(mList.begin(), mList.end());
 	mList.erase(unique(mList.begin(), mList.end()), mList.end());

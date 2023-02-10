@@ -9,13 +9,13 @@
 #include "Client.hpp"
 #include "Define.hpp"
 
-#define OPER 1
-#define NORMAL 2
+#define OPER    1
+#define NORMAL  2
+#define SIZE    3
 
 class Channel {
     private:
         std::map<const Client&, int> _users;
-
         std::map<const Client&, int>::iterator _it;
         std::map<const Client&, int>::const_iterator _coit;
         std::string _name;
@@ -28,7 +28,7 @@ class Channel {
         bool checkClient(std::string nick);
         void addUser(const Client& client);
         void delUser(const Client& client);
-        void delByNick(std::string nick);
+        int  delByNick(std::string nick);
         void opUser(std::string nick);
         void deopUser(std::string nick);
         int getUserSize(void) const;

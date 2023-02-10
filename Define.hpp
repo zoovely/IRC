@@ -10,7 +10,7 @@
 # define RPL_JOIN(nick, ip, channel)					":" + nick + "!" + nick + "@" + ip + " JOIN " + channel + "\r\n"
 # define RPL_NAMREPLY(nick, channel, users)			    ":LAZYIRC 353 " + nick + " = " + channel + " :" + users + "\r\n"
 # define RPL_ENDOFNAMES(nick, channel)                  ":LAZYIRC 366 " + nick + " " + channel + " :End of /NAMES list\r\n"
-# define RPL_MODE_N(nick, channel)						":LAZYIRC 324 " + nick + " " + channel + " +n\r\n"
+# define RPL_MODE_N(nick, channel)						":LAZYIRC 324 " + nick + " " + channel + " +nl 5\r\n"
 
 /* [PART] */ 
 /* 채널에 전송 */
