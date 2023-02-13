@@ -28,6 +28,16 @@ Server::Server(int portNum, std::string pwd)
 	std::memset(_saveBuf, 0, BUF * 2 * USER_MAX);
 }
 
+std::list<Channel>::iterator Server::checkChannel(std::string chName)
+{
+	for (_chit = _channels.begin(); _chit != _channels.end(); _chit++)
+	{
+		if (_chit->getName() == chName)
+			break ;
+	}
+	return (_chit);
+}
+
 int Server::acceptClient( void ) 
 {
 	struct sockaddr_in	sclient;
@@ -41,16 +51,6 @@ int Server::acceptClient( void )
 	_poll[_serverFd].revents = 0;
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	return (1);
-}
-
-std::list<Channel>::iterator Server::checkChannel(std::string chName)
-{
-	for (_chit = _channels.begin(); _chit != _channels.end(); _chit++)
-	{
-		if (_chit->getName() == chName)
-			break ;
-	}
-	return (_chit);
 }
 
 int	Server::readClient(int fd) 
@@ -68,7 +68,7 @@ int	Server::readClient(int fd)
 	{
 		std::strcat(_saveBuf[fd], _readBuf);
 		std::cout << "fd : " << fd << "\n";
-		std::cout << "readBuf : " << _readBuf << "\n";
+		std::cout << "readBuf : " << _readBuf;
 		std::cout << "saveBuf : " << _saveBuf[fd] << "\n";
 		executeCommand(fd);
 		_poll[fd].revents = 0;
@@ -79,34 +79,16 @@ int	Server::readClient(int fd)
 	return (1);
 }
 
-std::list<Client>::iterator Server::getClientByFd(int fd) {
-	for (_cit = _clients.begin(); _cit != _clients.end(); _cit++)
-	{
-		if (_cit->getFd() == fd)
-			break;
-	}
-	return (_cit);
+void Server::errorHandler(std::string msg) 
+{
+	std::cout << msg;
+	std::exit(1);
 }
 
 void	Server::executeCommand(int fd) {
 	Command	com(_saveBuf[fd]);
 	int	type = com.checkMsgType();
 	
-	std::list<Client>::iterator cIt;
-	std::cout << " ===== clients list ===== \n";
-	for (cIt = _clients.begin(); cIt != _clients.end(); cIt++)
-	{
-		std::cout << cIt->getNick() << "\n";
-		std::cout << &(*cIt) << "\n";
-	}
-	std::cout << "====== channel list ====== \n";
-	for (_chit = _channels.begin(); _chit != _channels.end(); _chit++)
-	{
-		std::cout << _chit->getName() << "\n";
-		std::cout << _chit->getUsersNames() << "\n";
-		std::cout << &(*_chit)<< "\n";
-	}
-
 	_cit = getClientByFd(fd);
 	switch (type)
 	{
@@ -114,7 +96,7 @@ void	Server::executeCommand(int fd) {
 			com.connect(fd, _pwd, _clients);
 			break;
 		case PASS:
-			com.pass((*_cit), _pwd, _clients, _cit);
+			com.pass((*_cit), _pwd, _clients);
 			break;
 		case JOIN:
 			com.join((*_cit), _channels);
@@ -132,7 +114,7 @@ void	Server::executeCommand(int fd) {
 			com.nick((*_cit), _clients, _channels);
 			break;
 		case USER:
-			com.user((*_cit), _clients);
+			com.user((*_cit));
 			break;
 		case LIST:
 			com.list((*_cit), _channels);
@@ -183,15 +165,18 @@ int Server::getServerFd( void ) {
 	return _serverFd;
 }
 
-void Server::errorHandler(std::string msg) 
-{
-	std::cout << msg;
-	std::exit(1);
-}
-
 void Server::setPollFd(int index, int fd, int events, int revents)
 {
 	_poll[index].fd = fd;
 	_poll[index].events = events;
 	_poll[index].revents = revents;
+}
+
+std::list<Client>::iterator Server::getClientByFd(int fd) {
+	for (_cit = _clients.begin(); _cit != _clients.end(); _cit++)
+	{
+		if (_cit->getFd() == fd)
+			break;
+	}
+	return (_cit);
 }

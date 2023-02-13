@@ -32,15 +32,8 @@ bool Channel::checkClient(std::string nick) {
     return (false);
 }
 
-// return int값으로 주고 
-//command join 할 때 여기값으로 send하기
 void Channel::addUser(const Client& client)
 {
-    if (_users.size() == SIZE)
-    {
-        // sendFd(client.getFd(), ERR_CHANNELISFULL(client.getNick(), _name));
-        return ;
-    }
     _users.insert(std::make_pair<const Client&, int>(client, NORMAL));
     return ;
 }
@@ -54,7 +47,7 @@ int Channel::delByNick(std::string nick) {
     for (_it = _users.begin(); _it != _users.end(); _it++)
     {
         if (_it->first.getNick() == nick) {
-            delUser(_it->first);
+            _it = _users.erase(_it);
             return (1);
         }
     }
@@ -63,6 +56,18 @@ int Channel::delByNick(std::string nick) {
 
 int Channel::getUserSize( void ) const {
     return _users.size();
+}
+
+std::string Channel::getUsersNames(void) {
+    std::string msg;
+    _it = _users.begin();
+    for (_it = _users.begin(); _it != _users.end(); _it++) {
+        if(_it->second == OPER)
+            msg += "@";
+        msg += _it->first.getNick();
+        msg += " ";
+    }
+    return (msg);
 }
 
 std::vector<int> Channel::getFds(int senderFd) const {
@@ -78,7 +83,7 @@ std::vector<int> Channel::getFds(int senderFd) const {
     return (fds);
 }
 
-void Channel::opUser(std::string nick){
+void Channel::opUser(std::string nick) {
     for (_it = _users.begin(); _it != _users.end(); _it++) {
         if (_it->first.getNick() == nick)
         {
@@ -89,7 +94,7 @@ void Channel::opUser(std::string nick){
     return ;
 }
 
-void Channel::deopUser(std::string nick){
+void Channel::deopUser(std::string nick) {
     for (_it = _users.begin(); _it != _users.end(); _it++) {
         if (_it->first.getNick() == nick)
         {
@@ -98,19 +103,4 @@ void Channel::deopUser(std::string nick){
         }
     }
     return ;
-}
-
-std::string Channel::getUsersNames(void) {
-    std::string msg;
-    _it = _users.begin();
-    for (_it = _users.begin(); _it != _users.end(); _it++) {
-        std::cout << "getUserNames : nick " << _it->first.getNick() << "\n";
-        std::cout << "getUserNames : mode " << _it->second << "\n";
-        std::cout << "getUserNames : addr " << &_it->first << "\n";
-        if(_it->second == OPER)
-            msg += "@";
-        msg += _it->first.getNick();
-        msg += " ";
-    }
-    return (msg);
 }

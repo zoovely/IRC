@@ -34,15 +34,16 @@ class Server {
         
     public :
         Server(int portNum, std::string pwd);
-        std::list<Channel>::iterator checkChannel(std::string channel);
-        int acceptClient( void );
-        int readClient(int fd);
-        void errorHandler(std::string msg);
-        void executeCommand(int fd);
 
-        struct pollfd* getPoll( void );
-        int getServerFd( void );
-        void setPollFd(int index, int fd, int events, int revents);
+        std::list<Channel>::iterator checkChannel(std::string channel);
+        int             acceptClient(void);
+        int             readClient(int fd);
+        void            errorHandler(std::string msg);
+        void            executeCommand(int fd);
+
+        struct pollfd*  getPoll(void);
+        int             getServerFd(void);
+        void            setPollFd(int index, int fd, int events, int revents);
         std::list<Client>::iterator getClientByFd(int fd);
 };
 

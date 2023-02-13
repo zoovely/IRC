@@ -33,48 +33,47 @@
 
 class Command {
     private:
-        std::string _msg;
-        std::vector<std::string> _splitMsg;
-        std::list<Channel>::iterator _chit;
-        std::list<Channel>::const_iterator _coChit;
-        std::list<Client>::iterator _cit;
-        std::list<Client>::const_iterator _coCit;
+        std::string                         _msg;
+        std::vector<std::string>            _splitMsg;
+        std::list<Channel>::iterator        _chit;
+        std::list<Channel>::const_iterator  _coChit;
+        std::list<Client>::iterator         _cit;
+        std::list<Client>::const_iterator   _coCit;
         
     public:
         Command(std::string msg);
-        void splitMsg(void);
-        int checkMsgType(void);
-        void sendFd(int fd, std::string str);
-        void sendAll(std::vector<int> fds, std::string str);
-        std::list<Channel>::const_iterator checkValidChannel(const std::string chName, const std::list<Channel> &chList);
-        std::list<Client>::const_iterator checkValidClient(const std::string nick, const std::list<Client> &cList);
-        int	checkValidNick(const std::string nick);
+        void                                splitMsg(void);
+        int                                 checkMsgType(void);
+        void                                sendFd(int fd, std::string str);
+        void                                sendAll(std::vector<int> fds, std::string str);
+        std::list<Channel>::const_iterator  checkValidChannel(const std::string chName, const std::list<Channel> &chList);
+        std::list<Client>::const_iterator   checkValidClient(const std::string nick, const std::list<Client> &cList);
+        int	                                checkValidNick(const std::string nick);
+        int                                 chkNick(std::string nickName, std::list<Client> &cList, int fd);
       
-        std::list<Client>::iterator getClientByFd(int fd, std::list<Client> cList);
-        void delChannel(std::list<Channel> &chList, std::string name);
-        std::string getUsers(const Channel &channel);
-        void welcomeMsg(Client &client);
+        std::list<Client>::iterator         getClientByFd(int fd, std::list<Client> cList);
+        void                                delChannel(std::list<Channel> &chList, std::string name);
+        void                                welcomeMsg(Client &client);
 
         //command list 
         int connect(int fd, std::string pwd, std::list<Client> &cList);
-        int pass(Client &client, std::string pwd, std::list<Client> &cList, std::list<Client>::iterator cIt);
+        int pass(Client &client, std::string pwd, std::list<Client> &cList);
         int join(const Client &client, std::list<Channel> &chList);
         int part(const Client &client, std::list<Channel> &chList);
         int invite(const Client &client, const std::list<Channel> &chList, const std::list<Client> &cList);
         int kick(const Client &client, std::list<Channel> &chList);
         int nick(Client &client, std::list<Client> &cList, const std::list<Channel> &chList);
-        int chkNick(std::string nickName, std::list<Client> &cList, int fd);
-        int user(Client &client, std::list<Client> &cList);
+        int user(Client &client);
         int list(const Client &client, const std::list<Channel> &chList);
         int whois(const Client &client, const std::list<Client> &cList);
         int quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, std::list<Client> &cList);
         int ping(const Client &client);
         int op(const Client &client, std::list<Channel> &chList);
         int deop(const Client &client, std::list<Channel> &chList);
-        int privmsg(const Client &sender, const std::list<Channel> &chList);
         int privmsg(const Client &sender, const std::list<Client> &cList);
-        int notice(const Client &sender, const std::list<Channel> &chList);
+        int privmsg(const Client &sender, const std::list<Channel> &chList);
         int notice(const Client &sender, const std::list<Client> &cList);
+        int notice(const Client &sender, const std::list<Channel> &chList);
         int modeI(const Client &sender);
         int modeN(const Client &sender, const std::list<Channel> &chList);
 };
