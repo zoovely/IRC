@@ -13,7 +13,7 @@
 # define RPL_MODE_N(nick, channel)						":LAZYIRC 324 " + nick + " " + channel + " +nl 5\r\n"
 
 /* [PART] */ 
-/* 채널에 전송 */
+/* 채널에 전송 */	
 # define RPL_PART(nick, ip, channel)			        ":" + nick + "!" + nick + "@" + ip + " PART :" + channel + "\r\n"
 
 /* [INVITE 341 - 345 ]*/

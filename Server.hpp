@@ -17,18 +17,20 @@
 #include "Define.hpp"
 
 #define BUF 4096
+#define USER_MAX 100
 
 class Server {
     private :
         int                  _serverFd;
         struct sockaddr_in   _serverSin;
-        struct pollfd        _poll[OPEN_MAX];
+        struct pollfd        _poll[USER_MAX];
         std::string          _pwd;
         std::list<Client>    _clients;
         std::list<Channel>   _channels;
         std::list<Client>::iterator     _cit;
         std::list<Channel>::iterator    _chit;
         char                 _readBuf[BUF];
+        char                 _saveBuf[USER_MAX][BUF * 2];
         
     public :
         Server(int portNum, std::string pwd);

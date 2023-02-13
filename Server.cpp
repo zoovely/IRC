@@ -3,8 +3,6 @@
 
 Server::Server(int portNum, std::string pwd)
 {
-	//buf를 저장하는 구조체 만들고
-
     _pwd = pwd;
     _serverFd = socket(PF_INET, SOCK_STREAM, 0);
     if (_serverFd == -1) 
@@ -25,8 +23,9 @@ Server::Server(int portNum, std::string pwd)
         errorHandler("Error: listen failed\n");
     }
 	setPollFd(_serverFd, _serverFd, POLLIN, 0);
-	for (int i = _serverFd + 1; i < OPEN_MAX; i++)
+	for (int i = _serverFd + 1; i < USER_MAX; i++)
 		setPollFd(i, -1, 0, 0);
+	std::memset(_saveBuf, 0, BUF * 2 * USER_MAX);
 }
 
 int Server::acceptClient( void ) 
@@ -56,7 +55,6 @@ std::list<Channel>::iterator Server::checkChannel(std::string chName)
 
 int	Server::readClient(int fd) 
 {
-	
 	std::memset(_readBuf, 0, BUF);
 	int r = recv(fd, _readBuf, BUF, MSG_DONTWAIT);
 	if (r <= 0)
@@ -66,20 +64,22 @@ int	Server::readClient(int fd)
 		setPollFd(fd, -1, 0, 0);
 		return (-1);
 	}
-	//해당 fd에 대해서 구조체에서 찾아서 뒤에 붙여주고
-	//그 버프에 들어온거로 command array만들어서 각 command에 대해서 executecommand실행하고 -> 함수로 빼고
-	// 그러면 처음에 한번에 들어올거라고 생각 안하고 
-	//그냥 cap ls, pass, nick, user를 다 따로 실행한다고 생각하고 다시 작성해야하고 = ??? \r\n 매행?
-	// \r\n없이 끝났으면 그거 버프에 계속 저장하고 있고
-	// fd에 대해서 연결 끝나면 (close 되면)버프도 날려주고
-	std::cout << "fd : " << fd << "\n";
-	std::cout << "readBuf : " << _readBuf << "\n";
-	executeCommand(fd);
-	_poll[fd].revents = 0;
+	if (_readBuf[r - 2] == '\r' && _readBuf[r - 1] == '\n')
+	{
+		std::strcat(_saveBuf[fd], _readBuf);
+		std::cout << "fd : " << fd << "\n";
+		std::cout << "readBuf : " << _readBuf << "\n";
+		std::cout << "saveBuf : " << _saveBuf[fd] << "\n";
+		executeCommand(fd);
+		_poll[fd].revents = 0;
+		std::memset(_saveBuf[fd], 0, BUF * 2);
+	}
+	else
+		std::strcat(_saveBuf[fd], _readBuf);
 	return (1);
 }
 
-std::list<Client>::iterator Server::getClientByFd(int fd) {\
+std::list<Client>::iterator Server::getClientByFd(int fd) {
 	for (_cit = _clients.begin(); _cit != _clients.end(); _cit++)
 	{
 		if (_cit->getFd() == fd)
@@ -89,7 +89,7 @@ std::list<Client>::iterator Server::getClientByFd(int fd) {\
 }
 
 void	Server::executeCommand(int fd) {
-	Command	com(_readBuf);
+	Command	com(_saveBuf[fd]);
 	int	type = com.checkMsgType();
 	
 	std::list<Client>::iterator cIt;

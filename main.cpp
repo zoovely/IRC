@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         std::cout << "Error : Wrong port num\n";
         return (1);
     }
-    
+
     Server server(portNum, argv[2]);
     int ret;
     int serverFd = server.getServerFd();
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
                 if (server.acceptClient() == 1)
                     ret--;
             }
-            for (int i = serverFd + 1; i < OPEN_MAX && ret > 0; i++)
+            for (int i = serverFd + 1; i < USER_MAX && ret > 0; i++)
             {
                 if (serverPoll[i].revents == POLLIN)
 	            {

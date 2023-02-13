@@ -166,10 +166,17 @@ int Command::pass(Client &client, std::string pwd, std::list<Client> &cList, std
 }
 
 int Command::join(const Client &client, std::list<Channel> &chList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
 	std::string chName = _splitMsg[1];
 	std::string userNames = "";
 	for (_chit = chList.begin(); _chit != chList.end(); _chit++) {
 		if (_chit->getName() == chName) {
+			if (_chit->getUserSize() == SIZE)
+			{
+				sendFd(client.getFd(), ERR_CHANNELISFULL(client.getNick(), chName));
+				return (-1);
+			}
 			_chit->addUser(client);
 			std::vector<int> fds = _chit->getFds(client.getFd());
 			sendAll(fds, RPL_JOIN(client.getNick(), client.getIp(), chName));
@@ -205,6 +212,9 @@ void Command::delChannel(std::list<Channel> &chList, std::string chName) {
 
 // part #chName msg?
 int Command::part(const Client &client, std::list<Channel> &chList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+	
 	std::string chName = _splitMsg[1];
 	_coChit = checkValidChannel(chName, chList);
 	if (_coChit == chList.end()) {
@@ -228,9 +238,10 @@ int Command::part(const Client &client, std::list<Channel> &chList) {
 
 // invite nick chName
 int Command::invite(const Client &client, const std::list<Channel> &chList, const std::list<Client> &cList) {
+	if (_splitMsg.size() < 3)
+		return (-1);
 	std::string target = _splitMsg[1];
 	std::string chName = _splitMsg[2];
-
 	_coChit = checkValidChannel(chName, chList);
 	if (_coChit == chList.end()) {
 		sendFd(client.getFd(), ERR_NOSUCHCHANNEL(client.getNick(), chName));
@@ -252,6 +263,8 @@ int Command::invite(const Client &client, const std::list<Channel> &chList, cons
 
 // kick chName nick
 int Command::kick(const Client &client, std::list<Channel> &chList) {
+	if (_splitMsg.size() < 3)
+		return (-1);
 	std::string chName = _splitMsg[1];
 	std::string target = _splitMsg[2];
 	_coChit = checkValidChannel(chName, chList);
@@ -280,6 +293,8 @@ int Command::kick(const Client &client, std::list<Channel> &chList) {
 }
 
 int Command::op(const Client &client, std::list<Channel> &chList) {
+	if (_splitMsg.size() < 4)
+		return (-1);
 	std::string chName = _splitMsg[1];
 	std::string nick = _splitMsg[3];
 	int cFd = client.getFd();
@@ -315,6 +330,8 @@ int Command::op(const Client &client, std::list<Channel> &chList) {
 }
 
 int Command::deop(const Client &client, std::list<Channel> &chList) {
+	if (_splitMsg.size() < 4)
+		return (-1);
 	std::string chName = _splitMsg[1];
 	std::string nick = _splitMsg[3];
 	int cFd = client.getFd();
@@ -451,6 +468,10 @@ int Command::user(Client &client, std::list<Client> &cList) {
 		cList.erase(getClientByFd(client.getFd(), cList));
 		return (-1);
 	}
+	if (_splitMsg.size() < i + 5) {
+		sendFd(client.getFd(), ERR_NEEDMOREPARAMS(client.getNick(), "USER"));
+		return (-1);
+	}
 	client.setUser(_splitMsg[i + 4].erase(0, 1));
 	client.setIp(_splitMsg[i + 3]);
 	if (client.getFlag() == A_NICK)
@@ -477,6 +498,8 @@ int Command::list(const Client &client, const std::list<Channel> &chList) {
 
 // whois nick
 int Command::whois(const Client &client, const std::list<Client> &cList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
 	int cFd = client.getFd();
 	std::string target = _splitMsg[1];
 	_coCit = checkValidClient(target, cList);
@@ -513,12 +536,18 @@ int Command::quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, s
 } 
 
 int Command::ping(const Client &client) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+		
 	sendFd(client.getFd(), RPL_PONG(_splitMsg[1]));
 	return (1);
 }
 
 // privMsg #chName msg
 int Command::privmsg(const Client &sender, const std::list<Channel> &chList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+		
 	std::string chName = _splitMsg[1];
 	_coChit = checkValidChannel(_splitMsg[1], chList);
 	if (_coChit == chList.end()) {
@@ -538,6 +567,9 @@ int Command::privmsg(const Client &sender, const std::list<Channel> &chList) {
 
 // privmsg nick msg //
 int Command::privmsg(const Client &sender, const std::list<Client> &cList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+		
 	std::string cName = _splitMsg[1];
 	_coCit = checkValidClient(cName, cList);
 	if (_coCit == cList.end()) {
@@ -549,6 +581,9 @@ int Command::privmsg(const Client &sender, const std::list<Client> &cList) {
 }
 
 int Command::notice(const Client &sender, const std::list<Channel> &chList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+
 	std::string chName = _splitMsg[1];
 	_coChit = checkValidChannel(chName, chList);
 	if (_coChit == chList.end()) {
@@ -566,6 +601,9 @@ int Command::notice(const Client &sender, const std::list<Channel> &chList) {
 }
 
 int Command::notice(const Client &sender, const std::list<Client> &cList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+
 	std::string cName = _splitMsg[1];
 	_coCit = checkValidClient(cName, cList);
 	if (_coCit == cList.end()) {
@@ -582,6 +620,9 @@ int Command::modeI(const Client &sender) {
 }
 
 int Command::modeN(const Client &sender , const std::list<Channel> &chList) {
+	if (_splitMsg.size() < 2)
+		return (-1);
+
 	std::string chName = _splitMsg[1];
 	int cFd = sender.getFd();
 	_coChit = checkValidChannel(chName, chList);
