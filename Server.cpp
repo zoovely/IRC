@@ -65,11 +65,11 @@ int	Server::readClient(int fd)
 		return (-1);
 	} else if (r == 0) 
 	{
-		std::strcat(_saveBuf[fd], "\r\nQUIT\r\n");
+		std::memset(_saveBuf[fd], 0, BUF * 2);
+		std::strcat(_saveBuf[fd], "QUIT :disconnected\r\n");
 		std::cout << "========== recv client " << fd << " ==========\n";
 		std::cout << _saveBuf[fd] << "\n\n";
 		executeCommand(fd);
-		close(fd);
 		setPollFd(fd, -1, 0, 0);
 		std::memset(_saveBuf[fd], 0, BUF * 2);
 		return (1);

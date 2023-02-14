@@ -462,8 +462,8 @@ int Command::quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, s
 	if (_splitMsg.size() == 2)
 		msg = _splitMsg[1];
 	sendAll(mList, RPL_QUIT(cIt->getNick(), cIt->getNick(), cIt->getIp(), msg));
-	cList.erase(cIt);
 	close(cIt->getFd());
+	cList.erase(cIt);
 	return (1);
 } 
 
