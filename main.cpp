@@ -5,29 +5,45 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
-
 #include "Server.hpp"
 
-int main(int argc, char *argv[])
+int checkArg(int argc, char *argv[])
 {
     if (argc != 3) {
         std::cout << "Error : Wrong Argument\n";
         std::cout << "Usage: ./irserve <portnum> <password>\n";
-        return (1);
+        return (-1);
+    }
+    for (int i = 0; argv[1][i] != '\0'; i++)
+    {
+        if (argv[1][i] < '0' || argv[1][i] > '9')
+        {
+            std::cout << "Error : Wrong port num\n";
+            return (-1);
+        }
     }
     int portNum = std::atoi(argv[1]);
     if (portNum < 0 || portNum > 65535) {
         std::cout << "Error : Wrong port num\n";
-        return (1);
+        return (-1);
     }
+    return (portNum);
+}
 
+int main(int argc, char *argv[])
+{
+    int portNum = checkArg(argc, argv);
+    if (portNum == -1)
+        return (1);
     Server server(portNum, argv[2]);
     int ret;
     int serverFd = server.getServerFd();
     struct pollfd *serverPoll = server.getPoll();
 
-    std::cout << " _     _   ___ __ __ _  ___   __ \n| |   / \\ |_ / \\ V /| || o \\ / _|\n| |_ | o | /(_  \\ / | ||   /( (_ \n|___||_n_|/___| |_| |_||_|\\\\ \\__|\n\n";
-    
+    std::cout << " _     _   ___ __ __ _  ___   __ \n";
+    std::cout << "| |   / \\ |_ / \\ V /| || o \\ / _|\n";
+    std::cout << "| |_ | o | /(_  \\ / | ||   /( (_ \n";
+    std::cout << "|___||_n_|/___| |_| |_||_|\\\\ \\__|\n\n";
     while (1)
     {
         ret = poll(serverPoll, 100, 500);

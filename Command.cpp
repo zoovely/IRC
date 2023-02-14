@@ -104,7 +104,7 @@ std::list<Client>::const_iterator Command::checkValidClient(const std::string ni
 
 int	Command::checkValidNick(const std::string nick) {
 	std::string	cmdList[] = {"CAP", "PASS", "JOIN", "PART", "INVITE", "KICK", "NICK", "USER", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
-	for (size_t i = 0; i < 15; i++) {
+	for (size_t i = 0; i < sizeof(cmdList)/sizeof(std::string); i++) {
 		if (nick.compare(cmdList[i]) == 0)
 			return (-1);
 	}
