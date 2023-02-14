@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
     int ret;
     int serverFd = server.getServerFd();
     struct pollfd *serverPoll = server.getPoll();
+
+    std::cout << " _     _   ___ __ __ _  ___   __ \n| |   / \\ |_ / \\ V /| || o \\ / _|\n| |_ | o | /(_  \\ / | ||   /( (_ \n|___||_n_|/___| |_| |_||_|\\\\ \\__|\n\n";
     
     while (1)
     {

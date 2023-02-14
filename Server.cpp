@@ -67,9 +67,8 @@ int	Server::readClient(int fd)
 	if (_readBuf[r - 2] == '\r' && _readBuf[r - 1] == '\n')
 	{
 		std::strcat(_saveBuf[fd], _readBuf);
-		std::cout << "fd : " << fd << "\n";
-		std::cout << "readBuf : " << _readBuf;
-		std::cout << "saveBuf : " << _saveBuf[fd] << "\n";
+		std::cout << "========== recv client " << fd << " ==========\n";
+		std::cout << _saveBuf[fd] << "\n\n";
 		executeCommand(fd);
 		_poll[fd].revents = 0;
 		std::memset(_saveBuf[fd], 0, BUF * 2);
