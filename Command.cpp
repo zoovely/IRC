@@ -45,22 +45,22 @@ int	Command::checkMsgType(void) {
 				case 12:
 					if (_splitMsg.size() > 2 && _splitMsg[2].find("+o", 0) != std::string::npos) 
 						return (OP);
-					else if (_splitMsg.size() > 3 && _splitMsg[2].find("-o", 0) != std::string::npos)
+					else if (_splitMsg.size() > 2 && _splitMsg[2].find("-o", 0) != std::string::npos)
 						return (DEOP);
-					else if (_splitMsg.size() > 3 && _splitMsg[2].find("+i", 0) != std::string::npos)
+					else if (_splitMsg.size() > 2 && _splitMsg[2].find("+i", 0) != std::string::npos)
 						return (MODE_I);
-					else if (_splitMsg.size() > 2 && _splitMsg[1].find("#", 0) != std::string::npos)
+					else if (_splitMsg.size() > 1 && _splitMsg[1].find("#", 0) != std::string::npos)
 						return (MODE_N);
 					break;
 				case 13:
-					if (_splitMsg.size() > 2) {
+					if (_splitMsg.size() > 1) {
 						if (_splitMsg[1].find("#", 0) == std::string::npos)
 							return (PRIVMSG);
 						else
 							return (PRIVCH);
 					}
 				case 14:
-					if (_splitMsg.size() > 2) {
+					if (_splitMsg.size() > 1) {
 						if (_splitMsg[1].find("#", 0) == std::string::npos)
 							return (NOTICE);
 						else
