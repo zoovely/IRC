@@ -43,25 +43,29 @@ int	Command::checkMsgType(void) {
 			switch (i)
 			{
 				case 12:
-					if (_splitMsg[2].find("+o", 0) != std::string::npos)
+					if (_splitMsg.size() > 2 && _splitMsg[2].find("+o", 0) != std::string::npos) 
 						return (OP);
-					else if (_splitMsg[2].find("-o", 0) != std::string::npos)
+					else if (_splitMsg.size() > 3 && _splitMsg[2].find("-o", 0) != std::string::npos)
 						return (DEOP);
-					else if (_splitMsg[2].find("+i", 0) != std::string::npos)
+					else if (_splitMsg.size() > 3 && _splitMsg[2].find("+i", 0) != std::string::npos)
 						return (MODE_I);
-					else if (_splitMsg[1].find("#", 0) != std::string::npos)
+					else if (_splitMsg.size() > 2 && _splitMsg[1].find("#", 0) != std::string::npos)
 						return (MODE_N);
 					break;
 				case 13:
-					if (_splitMsg[1].find("#", 0) == std::string::npos)
-						return (PRIVMSG);
-					else
-						return (PRIVCH);
+					if (_splitMsg.size() > 2) {
+						if (_splitMsg[1].find("#", 0) == std::string::npos)
+							return (PRIVMSG);
+						else
+							return (PRIVCH);
+					}
 				case 14:
-					if (_splitMsg[1].find("#", 0) == std::string::npos)
-						return (NOTICE);
-					else
-						return (NOTICH);
+					if (_splitMsg.size() > 2) {
+						if (_splitMsg[1].find("#", 0) == std::string::npos)
+							return (NOTICE);
+						else
+							return (NOTICH);
+					}
 				default:
 					return (i + 1);
 			}
@@ -363,6 +367,8 @@ int Command::nick(Client &client, std::list<Client> &cList, const std::list<Chan
 			user(client);
 	}
 	else if (client.getFlag() == DONE) {
+		if (_splitMsg.size() < 2)
+			return (-1);
  		nickName = _splitMsg[1];
 		if (chkNick(nickName, cList, cFd) == -1)
 			return (-1);
@@ -462,8 +468,8 @@ int Command::quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, s
 	if (_splitMsg.size() == 2)
 		msg = _splitMsg[1];
 	sendAll(mList, RPL_QUIT(cIt->getNick(), cIt->getNick(), cIt->getIp(), msg));
-	close(cIt->getFd());
 	cList.erase(cIt);
+	close(cIt->getFd());
 	return (1);
 } 
 
