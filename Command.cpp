@@ -447,7 +447,7 @@ int Command::quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, s
 	std::vector<int>	mList;
 	std::vector<int>	temp;
 	
-	if (cIt->getFlag() != DONE)
+	if (cIt->getFlag() != DONE || cIt == cList.end())
 		return (-1);
 	for (_chit = chList.begin(); _chit != chList.end(); _chit++) {
 		if (_chit->delByNick(cIt->getNick()) == 1)

@@ -47,7 +47,7 @@ int Server::acceptClient( void )
 		std::cout << "Error: socket connect fail\n";
 		return (-1);
 	}
-	setPollFd(clientFd, clientFd, POLLIN, 0);
+	setPollFd(clientFd, clientFd, POLLIN | POLLHUP, 0);
 	_poll[_serverFd].revents = 0;
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	return (1);
@@ -57,12 +57,22 @@ int	Server::readClient(int fd)
 {
 	std::memset(_readBuf, 0, BUF);
 	int r = recv(fd, _readBuf, BUF, MSG_DONTWAIT);
-	if (r <= 0)
+	if (r < 0)
 	{
 		std::cout << "Error: read fail\n";
 		close(fd);
 		setPollFd(fd, -1, 0, 0);
 		return (-1);
+	} else if (r == 0) 
+	{
+		std::strcat(_saveBuf[fd], "\r\nQUIT\r\n");
+		std::cout << "========== recv client " << fd << " ==========\n";
+		std::cout << _saveBuf[fd] << "\n\n";
+		executeCommand(fd);
+		close(fd);
+		setPollFd(fd, -1, 0, 0);
+		std::memset(_saveBuf[fd], 0, BUF * 2);
+		return (1);
 	}
 	if (_readBuf[r - 2] == '\r' && _readBuf[r - 1] == '\n')
 	{

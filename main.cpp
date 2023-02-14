@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
             }
             for (int i = serverFd + 1; i < USER_MAX && ret > 0; i++)
             {
-                if (serverPoll[i].revents == POLLIN)
+                if (serverPoll[i].revents == POLLIN || serverPoll[i].revents & POLLHUP)
 	            {
                     if (server.readClient(i) == 1)
                         ret--;
