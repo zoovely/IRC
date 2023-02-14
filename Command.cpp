@@ -5,6 +5,7 @@
 
 Command::Command(std::string msg) {
 	_msg = msg;
+	_splitMsg.clear();
 	splitMsg();
 }
 
