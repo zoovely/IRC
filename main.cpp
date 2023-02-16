@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
     std::cout << "| |   / \\ |_ / \\ V /| || o \\ / _|\n";
     std::cout << "| |_ | o | /(_  \\ / | ||   /( (_ \n";
     std::cout << "|___||_n_|/___| |_| |_||_|\\\\ \\__|\n\n";
+    
     while (1)
     {
         ret = poll(serverPoll, 100, 500);

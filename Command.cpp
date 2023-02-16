@@ -6,7 +6,6 @@
 
 Command::Command(std::string msg) {
 	_msg = msg;
-	_splitMsg.clear();
 	splitMsg();
 }
 
@@ -31,7 +30,7 @@ void Command::splitMsg(void) {
 		newpos = _msg.find("\r\n", i);
 	}
 	if (colone != std::string::npos)
-		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone -2));
+		_splitMsg.push_back(_msg.substr(colone, _msg.length() - colone - 2));
 	else
 		_splitMsg.push_back(_msg.substr(i, _msg.length() - i - 2));
 	return ;
@@ -41,7 +40,7 @@ int	Command::checkMsgType(void) {
 	std::string typeList[] = {"CAP", "PASS", "JOIN", "PART", "INVITE", "KICK", "NICK", "USER", "LIST", "WHOIS", "QUIT", "PING", "MODE", "PRIVMSG", "NOTICE"};
 	
 	for (size_t i = 0; i < sizeof(typeList)/sizeof(std::string); i++) {
-		if (_splitMsg[0].find(typeList[i]) != std::string::npos) {
+		if (_splitMsg.size() > 0 && _splitMsg[0].find(typeList[i]) != std::string::npos) {
 			switch (i)
 			{
 				case 12:
@@ -466,7 +465,7 @@ int Command::quit(std::list<Client>::iterator cIt, std::list<Channel> &chList, s
 	sort(mList.begin(), mList.end());
 	mList.erase(unique(mList.begin(), mList.end()), mList.end());
 	std::string msg = "";
-	if (_splitMsg.size() == 2)
+	if (_splitMsg.size() > 1)
 		msg = _splitMsg[1];
 	sendAll(mList, RPL_QUIT(cIt->getNick(), cIt->getNick(), cIt->getIp(), msg));
 	cList.erase(cIt);
@@ -577,7 +576,7 @@ int Command::privmsg(const Client &sender, const std::list<Client> &cList) {
 }
 
 int Command::privmsg(const Client &sender, const std::list<Channel> &chList) {
-	if (_splitMsg.size() < 2)
+	if (_splitMsg.size() < 3)
 		return (-1);
 	else if (sender.getFlag() != DONE)
 		return (-1);
@@ -599,7 +598,7 @@ int Command::privmsg(const Client &sender, const std::list<Channel> &chList) {
 }
 
 int Command::notice(const Client &sender, const std::list<Client> &cList) {
-	if (_splitMsg.size() < 2)
+	if (_splitMsg.size() < 3)
 		return (-1);
 	else if (sender.getFlag() != DONE)
 		return (-1);
@@ -614,7 +613,7 @@ int Command::notice(const Client &sender, const std::list<Client> &cList) {
 }
 
 int Command::notice(const Client &sender, const std::list<Channel> &chList) {
-	if (_splitMsg.size() < 2)
+	if (_splitMsg.size() < 3)
 		return (-1);
 	else if (sender.getFlag() != DONE)
 		return (-1);
