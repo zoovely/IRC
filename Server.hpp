@@ -1,15 +1,15 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <list>
 #include <poll.h>
 #include <cstring>
+#include <fcntl.h>
+#include <iostream>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "Client.hpp"
 #include "Channel.hpp"

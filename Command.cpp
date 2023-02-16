@@ -1,7 +1,8 @@
-#include "Command.hpp"
+#include <list>
 #include <iostream>
 #include <algorithm>
-#include <list>
+
+#include "Command.hpp"
 
 Command::Command(std::string msg) {
 	_msg = msg;
@@ -161,8 +162,7 @@ void Command::delChannel(std::list<Channel> &chList, std::string chName) {
 	return ;
 }
 
-void Command::welcomeMsg(Client &client)
-{
+void Command::welcomeMsg(Client &client) {
 	sendFd(client.getFd(), RPL_WELCOME(client.getNick()));
 	sendFd(client.getFd(), RPL_YOURHOST(client.getNick()));
 	client.setFlag(DONE);

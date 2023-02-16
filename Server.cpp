@@ -1,8 +1,7 @@
 #include <string>
 #include "Server.hpp"
 
-Server::Server(int portNum, std::string pwd)
-{
+Server::Server(int portNum, std::string pwd) {
     _pwd = pwd;
     _serverFd = socket(PF_INET, SOCK_STREAM, 0);
     if (_serverFd == -1) 
@@ -28,8 +27,7 @@ Server::Server(int portNum, std::string pwd)
 	std::memset(_saveBuf, 0, BUF * 2 * USER_MAX);
 }
 
-std::list<Channel>::iterator Server::checkChannel(std::string chName)
-{
+std::list<Channel>::iterator Server::checkChannel(std::string chName) {
 	for (_chit = _channels.begin(); _chit != _channels.end(); _chit++)
 	{
 		if (_chit->getName() == chName)
@@ -38,8 +36,7 @@ std::list<Channel>::iterator Server::checkChannel(std::string chName)
 	return (_chit);
 }
 
-int Server::acceptClient( void ) 
-{
+int Server::acceptClient( void ) {
 	struct sockaddr_in	sclient;
     socklen_t sclient_len = sizeof(sclient);
 	int clientFd = accept(_serverFd, (struct sockaddr*) &sclient, &sclient_len);
@@ -53,8 +50,7 @@ int Server::acceptClient( void )
 	return (1);
 }
 
-int	Server::readClient(int fd) 
-{
+int	Server::readClient(int fd) {
 	std::memset(_readBuf, 0, BUF);
 	int r = recv(fd, _readBuf, BUF, MSG_DONTWAIT);
 	if (r < 0)
@@ -88,8 +84,7 @@ int	Server::readClient(int fd)
 	return (1);
 }
 
-void Server::errorHandler(std::string msg) 
-{
+void Server::errorHandler(std::string msg) {
 	std::cout << msg;
 	std::exit(1);
 }
@@ -174,8 +169,7 @@ int Server::getServerFd( void ) {
 	return _serverFd;
 }
 
-void Server::setPollFd(int index, int fd, int events, int revents)
-{
+void Server::setPollFd(int index, int fd, int events, int revents) {
 	_poll[index].fd = fd;
 	_poll[index].events = events;
 	_poll[index].revents = revents;

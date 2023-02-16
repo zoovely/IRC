@@ -1,6 +1,6 @@
-#include "Channel.hpp"
 #include <algorithm>
 #include <iostream>
+#include "Channel.hpp"
 
 Channel::Channel(const Client& client, std::string name)
 :_name(name)

@@ -1,10 +1,10 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#include <unistd.h>
-#include <sys/socket.h>
 #include <list>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/socket.h>
 
 #include "Client.hpp"
 #include "Channel.hpp"
