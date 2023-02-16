@@ -651,9 +651,9 @@ int Command::modeN(const Client &sender , const std::list<Channel> &chList) {
 	_coChit = checkValidChannel(chName, chList);
 	if (_coChit == chList.end())
 	{
-		sendFd(cFd, ERR_NOSUCHNICK(sender.getNick(), chName));
+		sendFd(cFd, ERR_NOSUCHCHANNEL(sender.getNick(), chName));
 		return (-1);
 	}
-	sendFd(cFd, RPL_MODE_N(sender.getNick(), chName));
+	sendFd(cFd, RPL_MODE_N(sender.getNick(), chName, "3"));
 	return (1);
 }

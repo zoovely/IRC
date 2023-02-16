@@ -2,15 +2,15 @@
 # define DEFINE_HPP
 
 /* [WELCOME 001 - 002]*/
-# define RPL_WELCOME(nick)							    ":LAZYIRC 001 " + nick + " :Welcome to the Internet Relay Network " + nick + "\r\n"
-# define RPL_YOURHOST(nick)							    ":LAZYIRC 002 " + nick + " :Your host is LAZYIRC, running version 1.0\r\n"
+# define RPL_WELCOME(nick)							    ":LAZYIRC 001 " + nick + " :Welcome to the Internet Relay Chat" + nick + "\r\n"
+# define RPL_YOURHOST(nick)							    ":LAZYIRC 002 " + nick + " :Your host is LAZYIRC, running version 1.2\r\n"
 # define RPL_MODE_I(nick, ip)							":" + nick + "!" + nick + "@" + ip + " MODE " + nick + " :+i\r\n"
 
 /* [JOIN 353 - 366] */
 # define RPL_JOIN(nick, ip, channel)					":" + nick + "!" + nick + "@" + ip + " JOIN " + channel + "\r\n"
 # define RPL_NAMREPLY(nick, channel, users)			    ":LAZYIRC 353 " + nick + " = " + channel + " :" + users + "\r\n"
 # define RPL_ENDOFNAMES(nick, channel)                  ":LAZYIRC 366 " + nick + " " + channel + " :End of /NAMES list\r\n"
-# define RPL_MODE_N(nick, channel)						":LAZYIRC 324 " + nick + " " + channel + " +nl 5\r\n"
+# define RPL_MODE_N(nick, channel, size)				":LAZYIRC 324 " + nick + " " + channel + " +nl " + size + "\r\n"
 
 /* [PART] */ 
 /* 채널에 전송 */	

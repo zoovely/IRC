@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
     int portNum = checkArg(argc, argv);
     if (portNum == -1)
         return (1);
+    
     Server server(portNum, argv[2]);
-
     int ret;
     int serverFd = server.getServerFd();
     struct pollfd *serverPoll = server.getPoll();
@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
     std::cout << "| |   / \\ |_ / \\ V /| || o \\ / _|\n";
     std::cout << "| |_ | o | /(_  \\ / | ||   /( (_ \n";
     std::cout << "|___||_n_|/___| |_| |_||_|\\\\ \\__|\n\n";
+
     while (1)
     {
         ret = poll(serverPoll, 100, 500);
